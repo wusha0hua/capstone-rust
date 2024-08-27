@@ -1,0 +1,4151 @@
+/* This file defines standard ELF u8s, structures, and macros.
+   Copyright (C) 1995-2022 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
+
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, see
+   <https://www.gnu.org/licenses/>.  */
+
+
+/* The ELF file header.  This appears at the start of every ELF file.  */
+
+const EI_NIDENT: u8 = 16;
+
+struct Elf32_Ehdr {
+    e_ident: [u8; EI_NIDENT as usize],	/* Magic number and other info */
+    e_u8: u16,			/* Object file u8 */
+    e_machine: u16,		/* Architecture */
+    e_version: u32,		/* Object file version */
+    e_entry: u32,	/* Entry point virtual address */
+    e_phoff: u32,		/* Program header table file offset */
+    e_shoff: u32,		/* Section header table file offset */
+    e_flags: u32,		/* Processor-specific flags */
+    e_ehsize: u16,		/* ELF header size in bytes */
+    e_phentsize: u16,		/* Program header table entry size */
+    e_phnum: u16,		/* Program header table entry count */
+    e_shentsize: u16,		/* Section header table entry size */
+    e_shnum: u16,		/* Section header table entry count */
+    e_shstrndx: u16,		/* Section header string table index */
+}
+
+struct Elf64_Ehdr{
+    e_ident: [u8; EI_NIDENT as usize],	/* Magic number and other info */
+    e_u8: u16,			/* Object file u8 */
+    e_machine: u16,     /* Architecture */
+    e_version: u32,		/* Object file version */
+    e_entry: u64,		/* Entry point virtual address */
+    e_phoff: u64,		/* Program header table file offset */
+    e_shoff: u64,		/* Section header table file offset */
+    e_flags: u32,		/* Processor-specific flags */
+    e_ehsize: u16,		/* ELF header size in bytes */
+    e_phentsize: u16,		/* Program header table entry size */
+    e_phnum: u16,		/* Program header table entry count */
+    e_shentsize: u16,		/* Section header table entry size */
+    e_shnum: u16,		/* Section header table entry count */
+    e_shstrndx: u16,		/* Section header string table index */
+}
+
+/* Fields in the e_ident array.  The EI_* macros are indices into the
+   array.  The macros under each EI_* macro are the values the byte
+   may have.  */
+
+const EI_MAG0: u8 =	0;		/* File identification byte 0 index */
+const ELFMAG0: u8 = 0x7f;		/* Magic number byte 0 */
+
+const EI_MAG1: u8 = 1;		/* File identification byte 1 index */
+const ELFMAG1: char = 'E';		/* Magic number byte 1 */
+
+const EI_MAG2: u8 = 2;		/* File identification byte 2 index */
+const ELFMAG2: char = 'L';		/* Magic number byte 2 */
+
+const EI_MAG3: u8 = 3;		/* File identification byte 3 index */
+const ELFMAG3: char = 'F';		/* Magic number byte 3 */
+
+/* Conglomeration of the identification bytes, for easy testing as a word.  */
+const ELFMAG: &'static str = "\x177ELF";
+const SELFMAG: u8 = 4;
+
+const EI_CLASS: u8 = 4;		/* File class byte index */
+const ELFCLASSNONE: u8 = 0;		/* Invalid class */
+const ELFCLASS32: u8 = 1;		/* 32-bit objects */
+const ELFCLASS64: u8 = 2;		/* 64-bit objects */
+const ELFCLASSNUM: u8 = 3;
+
+const EI_DATA: u8 = 5;		/* Data encoding byte index */
+const ELFDATANONE: u8 = 0;		/* Invalid data encoding */
+const ELFDATA2LSB: u8 = 1;		/* 2's complement, little endian */
+const ELFDATA2MSB: u8 = 2;		/* 2's complement, big endian */
+const ELFDATANUM: u8 = 3;
+
+const EI_VERSION: u8 = 6;		/* File version byte index */
+					/* Value must be EV_CURRENT */
+
+const EI_OSABI: u8 = 7;		/* OS ABI identification */
+const ELFOSABI_NONE: u8 = 0;	/* UNIX System V ABI */
+const ELFOSABI_SYSV: u8 = 0;	/* Alias.  */
+const ELFOSABI_HPUX: u8 = 1;	/* HP-UX */
+const ELFOSABI_NETBSD: u8 = 2;	/* NetBSD.  */
+const ELFOSABI_GNU: u8 = 3;	/* Object uses GNU ELF extensions.  */
+const ELFOSABI_LINUX: u8 = ELFOSABI_GNU; /* Compatibility alias.  */
+const ELFOSABI_SOLARIS: u8 = 6;	/* Sun Solaris.  */
+const ELFOSABI_AIX: u8 = 7;	/* IBM AIX.  */
+const ELFOSABI_IRIX: u8 = 8;	/* SGI Irix.  */
+const ELFOSABI_FREEBSD: u8 = 9;	/* FreeBSD.  */
+const ELFOSABI_TRU64: u8 = 10;	/* Compaq TRU64 UNIX.  */
+const ELFOSABI_MODESTO: u8 = 11;	/* Novell Modesto.  */
+const ELFOSABI_OPENBSD: u8 = 12;	/* OpenBSD.  */
+const ELFOSABI_ARM_AEABI: u8 = 64;	/* ARM EABI */
+const ELFOSABI_ARM: u8 = 97;	/* ARM */
+const ELFOSABI_STANDALONE: u8 = 255;	/* Standalone (embedded) application */
+
+const EI_ABIVERSION: u8 = 8;		/* ABI version */
+
+const EI_PAD: u8 = 9;		/* Byte index of padding bytes */
+
+/* Legal values for e_u8 (object file u8).  */
+
+const ET_NONE: u16 = 0;		/* No file u8 */
+const ET_REL: u16 = 1;		/* Relocatable file */
+const ET_EXEC: u16 = 2;		/* Executable file */
+const ET_DYN: u16 = 3;		/* Shared object file */
+const ET_CORE: u16 = 4;		/* Core file */
+const ET_NUM: u16 = 5;		/* Number of defined u8s */
+const ET_LOOS: u16 = 0xfe00;		/* OS-specific range start */
+const ET_HIOS: u16 = 0xfeff;  	/* OS-specific range end */
+const ET_LOPROC: u16 = 0xff00;		/* Processor-specific range start */
+const ET_HIPROC: u16 = 0xffff;		/* Processor-specific range end */
+
+/* Legal values for e_machine (architecture).  */
+
+const EM_NONE: u16 = 0;	/* No machine */
+const EM_M32: u16 = 1;	/* AT&T WE 32100 */
+const EM_SPARC: u16 = 2;	/* SUN SPARC */
+const EM_386: u16 = 3;	/* Intel 80386 */
+const EM_68K: u16 = 4;	/* Motorola m68k family */
+const EM_88K: u16 = 5;	/* Motorola m88k family */
+const EM_IAMCU: u16 = 6;	/* Intel MCU */
+const EM_860: u16 = 7;	/* Intel 80860 */
+const EM_MIPS: u16 = 8;	/* MIPS R3000 big-endian */
+const EM_S370: u16 = 9;	/* IBM System/370 */
+const EM_MIPS_RS3_LE: u16 = 10;	/* MIPS R3000 little-endian */
+				/* reserved 11-14 */
+const EM_PARISC: u16 = 15;	/* HPPA */
+				/* reserved 16 */
+const EM_VPP500: u16 = 17;	/* Fujitsu VPP500 */
+const EM_SPARC32PLUS: u16 = 18;	/* Sun's "v8plus" */
+const EM_960: u16 = 19;	/* Intel 80960 */
+const EM_PPC: u16 = 20;	/* PowerPC */
+const EM_PPC64: u16 = 21;	/* PowerPC 64-bit */
+const EM_S390: u16 = 22;	/* IBM S390 */
+const EM_SPU: u16 = 23;	/* IBM SPU/SPC */
+				/* reserved 24-35 */
+const EM_V800: u16 = 36;	/* NEC V800 series */
+const EM_FR20: u16 = 37;	/* Fujitsu FR20 */
+const EM_RH32: u16 = 38;	/* TRW RH-32 */
+const EM_RCE: u16 = 39;	/* Motorola RCE */
+const EM_ARM: u16 = 40;	/* ARM */
+const EM_FAKE_ALPHA: u16 = 41;	/* Digital Alpha */
+const EM_SH: u16 = 42;	/* Hitachi SH */
+const EM_SPARCV9: u16 = 43;	/* SPARC v9 64-bit */
+const EM_TRICORE: u16 = 44;	/* Siemens Tricore */
+const EM_ARC: u16 = 45;	/* Argonaut RISC Core */
+const EM_H8_300: u16 = 46;	/* Hitachi H8/300 */
+const EM_H8_300H: u16 = 47;	/* Hitachi H8/300H */
+const EM_H8S: u16 = 48;	/* Hitachi H8S */
+const EM_H8_500: u16 = 49;	/* Hitachi H8/500 */
+const EM_IA_64: u16 = 50;	/* Intel Merced */
+const EM_MIPS_X: u16 = 51;	/* Stanford MIPS-X */
+const EM_COLDFIRE: u16 = 52;	/* Motorola Coldfire */
+const EM_68HC12: u16 = 53;	/* Motorola M68HC12 */
+const EM_MMA: u16 = 54;	/* Fujitsu MMA Multimedia Accelerator */
+const EM_PCP: u16 = 55;	/* Siemens PCP */
+const EM_NCPU: u16 = 56;	/* Sony nCPU embeeded RISC */
+const EM_NDR1: u16 = 57;	/* Denso NDR1 microprocessor */
+const EM_STARCORE: u16 = 58;	/* Motorola Start*Core processor */
+const EM_ME16: u16 = 59;	/* Toyota ME16 processor */
+const EM_ST100: u16 = 60;	/* STMicroelectronic ST100 processor */
+const EM_TINYJ: u16 = 61;	/* Advanced Logic Corp. Tinyj emb.fam */
+const EM_X86_64: u16 = 62;	/* AMD x86-64 architecture */
+const EM_PDSP: u16 = 63;	/* Sony DSP Processor */
+const EM_PDP10: u16 = 64;	/* Digital PDP-10 */
+const EM_PDP11: u16 = 65;	/* Digital PDP-11 */
+const EM_FX66: u16 = 66;	/* Siemens FX66 microcontroller */
+const EM_ST9PLUS: u16 = 67;	/* STMicroelectronics ST9+ 8/16 mc */
+const EM_ST7: u16 = 68;	/* STmicroelectronics ST7 8 bit mc */
+const EM_68HC16: u16 = 69;	/* Motorola MC68HC16 microcontroller */
+const EM_68HC11: u16 = 70;	/* Motorola MC68HC11 microcontroller */
+const EM_68HC08: u16 = 71;	/* Motorola MC68HC08 microcontroller */
+const EM_68HC05: u16 = 72;	/* Motorola MC68HC05 microcontroller */
+const EM_SVX: u16 = 73;	/* Silicon Graphics SVx */
+const EM_ST19: u16 = 74;	/* STMicroelectronics ST19 8 bit mc */
+const EM_VAX: u16 = 75;	/* Digital VAX */
+const EM_CRIS: u16 = 76;	/* Axis Communications 32-bit emb.proc */
+const EM_JAVELIN: u16 = 77;	/* Infineon Technologies 32-bit emb.proc */
+const EM_FIREPATH: u16 = 78;	/* Element 14 64-bit DSP Processor */
+const EM_ZSP: u16 = 79;	/* LSI Logic 16-bit DSP Processor */
+const EM_MMIX: u16 = 80;	/* Donald Knuth's educational 64-bit proc */
+const EM_HUANY: u16 = 81;	/* Harvard University machine-independent object files */
+const EM_PRISM: u16 = 82;	/* SiTera Prism */
+const EM_AVR: u16 = 83;	/* Atmel AVR 8-bit microcontroller */
+const EM_FR30: u16 = 84;	/* Fujitsu FR30 */
+const EM_D10V: u16 = 85;	/* Mitsubishi D10V */
+const EM_D30V: u16 = 86;	/* Mitsubishi D30V */
+const EM_V850: u16 = 87;	/* NEC v850 */
+const EM_M32R: u16 = 88;	/* Mitsubishi M32R */
+const EM_MN10300: u16 = 89;	/* Matsushita MN10300 */
+const EM_MN10200: u16 = 90;	/* Matsushita MN10200 */
+const EM_PJ: u16 = 91;	/* picoJava */
+const EM_OPENRISC: u16 = 92;	/* OpenRISC 32-bit embedded processor */
+const EM_ARC_COMPACT: u16 = 93;	/* ARC International ARCompact */
+const EM_XTENSA: u16 = 94;	/* Tensilica Xtensa Architecture */
+const EM_VIDEOCORE: u16 = 95;	/* Alphamosaic VideoCore */
+const EM_TMM_GPP: u16 = 96;	/* Thompson Multimedia General Purpose Proc */
+const EM_NS32K: u16 = 97;	/* National Semi. 32000 */
+const EM_TPC: u16 = 98;	/* Tenor Network TPC */
+const EM_SNP1K: u16 = 99;	/* Trebia SNP 1000 */
+const EM_ST200: u16 = 100;	/* STMicroelectronics ST200 */
+const EM_IP2K: u16 = 101;	/* Ubicom IP2xxx */
+const EM_MAX: u16 = 102;	/* MAX processor */
+const EM_CR: u16 = 103;	/* National Semi. CompactRISC */
+const EM_F2MC16: u16 = 104;	/* Fujitsu F2MC16 */
+const EM_MSP430: u16 = 105;	/* Texas Instruments msp430 */
+const EM_BLACKFIN: u16 = 106;	/* Analog Devices Blackfin DSP */
+const EM_SE_C33: u16 = 107;	/* Seiko Epson S1C33 family */
+const EM_SEP: u16 = 108;	/* Sharp embedded microprocessor */
+const EM_ARCA: u16 = 109;	/* Arca RISC */
+const EM_UNICORE: u16 = 110;	/* PKU-Unity & MPRC Peking Uni. mc series */
+const EM_EXCESS: u16 = 111;	/* eXcess configurable cpu */
+const EM_DXP: u16 = 112;	/* Icera Semi. Deep Execution Processor */
+const EM_ALTERA_NIOS2: u16 = 113;	/* Altera Nios II */
+const EM_CRX: u16 = 114;	/* National Semi. CompactRISC CRX */
+const EM_XGATE: u16 = 115;	/* Motorola XGATE */
+const EM_C166: u16 = 116;	/* Infineon C16x/XC16x */
+const EM_M16C: u16 = 117;	/* Renesas M16C */
+const EM_DSPIC30F: u16 = 118;	/* Microchip Technology dsPIC30F */
+const EM_CE: u16 = 119;	/* Freescale Communication Engine RISC */
+const EM_M32C: u16 = 120;	/* Renesas M32C */
+				/* reserved 121-130 */
+const EM_TSK3000: u16 = 131;	/* Altium TSK3000 */
+const EM_RS08: u16 = 132;	/* Freescale RS08 */
+const EM_SHARC: u16 = 133;	/* Analog Devices SHARC family */
+const EM_ECOG2: u16 = 134;	/* Cyan Technology eCOG2 */
+const EM_SCORE7: u16 = 135;	/* Sunplus S+core7 RISC */
+const EM_DSP24: u16 = 136;	/* New Japan Radio (NJR) 24-bit DSP */
+const EM_VIDEOCORE3: u16 = 137;	/* Broadcom VideoCore III */
+const EM_LATTICEMICO32: u16 = 138;	/* RISC for Lattice FPGA */
+const EM_SE_C17: u16 = 139;	/* Seiko Epson C17 */
+const EM_TI_C6000: u16 = 140;	/* Texas Instruments TMS320C6000 DSP */
+const EM_TI_C2000: u16 = 141;	/* Texas Instruments TMS320C2000 DSP */
+const EM_TI_C5500: u16 = 142;	/* Texas Instruments TMS320C55x DSP */
+const EM_TI_ARP32: u16 = 143;	/* Texas Instruments App. Specific RISC */
+const EM_TI_PRU: u16 = 144;	/* Texas Instruments Prog. Realtime Unit */
+				/* reserved 145-159 */
+const EM_MMDSP_PLUS: u16 = 160;	/* STMicroelectronics 64bit VLIW DSP */
+const EM_CYPRESS_M8C: u16 = 161;	/* Cypress M8C */
+const EM_R32C: u16 = 162;	/* Renesas R32C */
+const EM_TRIMEDIA: u16 = 163;	/* NXP Semi. TriMedia */
+const EM_QDSP6: u16 = 164;	/* QUALCOMM DSP6 */
+const EM_8051: u16 = 165;	/* Intel 8051 and variants */
+const EM_STXP7X: u16 = 166;	/* STMicroelectronics STxP7x */
+const EM_NDS32: u16 = 167;	/* Andes Tech. compact code emb. RISC */
+const EM_ECOG1X: u16 = 168;	/* Cyan Technology eCOG1X */
+const EM_MAXQ30: u16 = 169;	/* Dallas Semi. MAXQ30 mc */
+const EM_XIMO16: u16 = 170;	/* New Japan Radio (NJR) 16-bit DSP */
+const EM_MANIK: u16 = 171;	/* M2000 Reconfigurable RISC */
+const EM_CRAYNV2: u16 = 172;	/* Cray NV2 vector architecture */
+const EM_RX: u16 = 173;	/* Renesas RX */
+const EM_METAG: u16 = 174;	/* Imagination Tech. META */
+const EM_MCST_ELBRUS: u16 = 175;	/* MCST Elbrus */
+const EM_ECOG16: u16 = 176;	/* Cyan Technology eCOG16 */
+const EM_CR16: u16 = 177;	/* National Semi. CompactRISC CR16 */
+const EM_ETPU: u16 = 178;	/* Freescale Extended Time Processing Unit */
+const EM_SLE9X: u16 = 179;	/* Infineon Tech. SLE9X */
+const EM_L10M: u16 = 180;	/* Intel L10M */
+const EM_K10M: u16 = 181;	/* Intel K10M */
+				/* reserved 182 */
+const EM_AARCH64: u16 = 183;	/* ARM AARCH64 */
+				/* reserved 184 */
+const EM_AVR32: u16 = 185;	/* Amtel 32-bit microprocessor */
+const EM_STM8: u16 = 186;	/* STMicroelectronics STM8 */
+const EM_TILE64: u16 = 187;	/* Tilera TILE64 */
+const EM_TILEPRO: u16 = 188;	/* Tilera TILEPro */
+const EM_MICROBLAZE: u16 = 189;	/* Xilinx MicroBlaze */
+const EM_CUDA: u16 = 190;	/* NVIDIA CUDA */
+const EM_TILEGX: u16 = 191;	/* Tilera TILE-Gx */
+const EM_CLOUDSHIELD: u16 = 192;	/* CloudShield */
+const EM_COREA_1ST: u16 = 193;	/* KIPO-KAIST Core-A 1st gen. */
+const EM_COREA_2ND: u16 = 194;	/* KIPO-KAIST Core-A 2nd gen. */
+const EM_ARCV2: u16 = 195;	/* Synopsys ARCv2 ISA.  */
+const EM_OPEN8: u16 = 196;	/* Open8 RISC */
+const EM_RL78: u16 = 197;	/* Renesas RL78 */
+const EM_VIDEOCORE5: u16 = 198;	/* Broadcom VideoCore V */
+const EM_78KOR: u16 = 199;	/* Renesas 78KOR */
+const EM_56800EX: u16 = 200;	/* Freescale 56800EX DSC */
+const EM_BA1: u16 = 201;	/* Beyond BA1 */
+const EM_BA2: u16 = 202;	/* Beyond BA2 */
+const EM_XCORE: u16 = 203;	/* XMOS xCORE */
+const EM_MCHP_PIC: u16 = 204;	/* Microchip 8-bit PIC(r) */
+const EM_INTELGT: u16 = 205;	/* Intel Graphics Technology */
+				/* reserved 206-209 */
+const EM_KM32: u16 = 210;	/* KM211 KM32 */
+const EM_KMX32: u16 = 211;	/* KM211 KMX32 */
+const EM_EMX16: u16 = 212;	/* KM211 KMX16 */
+const EM_EMX8: u16 = 213;	/* KM211 KMX8 */
+const EM_KVARC: u16 = 214;	/* KM211 KVARC */
+const EM_CDP: u16 = 215;	/* Paneve CDP */
+const EM_COGE: u16 = 216;	/* Cognitive Smart Memory Processor */
+const EM_COOL: u16 = 217;	/* Bluechip CoolEngine */
+const EM_NORC: u16 = 218;	/* Nanoradio Optimized RISC */
+const EM_CSR_KALIMBA: u16 = 219;	/* CSR Kalimba */
+const EM_Z80: u16 = 220;	/* Zilog Z80 */
+const EM_VISIUM: u16 = 221;	/* Controls and Data Services VISIUMcore */
+const EM_FT32: u16 = 222;	/* FTDI Chip FT32 */
+const EM_MOXIE: u16 = 223;	/* Moxie processor */
+const EM_AMDGPU: u16 = 224;	/* AMD GPU */
+				/* reserved 225-242 */
+const EM_RISCV: u16 = 243;	/* RISC-V */
+
+const EM_BPF: u16 = 247;	/* Linux BPF -- in-kernel virtual machine */
+const EM_CSKY: u16 = 252;     /* C-SKY */
+
+const EM_NUM: u16 = 253;
+
+/* Old spellings/synonyms.  */
+
+const EM_ARC_A5: u16	= EM_ARC_COMPACT;
+
+/* If it is necessary to assign new unofficial EM_* values, please
+   pick large random numbers (0x8523, 0xa7f2, etc.) to minimize the
+   chances of collision with official or non-GNU unofficial values.  */
+
+const EM_ALPHA: u16 = 0x9026;
+
+/* Legal values for e_version (version).  */
+
+const EV_NONE: u32 = 0;		/* Invalid ELF version */
+const EV_CURRENT: u32 = 1;		/* Current version */
+const EV_NUM: u32 = 2;
+
+/* Section header.  */
+
+struct Elf32_Shdr{
+	sh_name: u32,		/* Section name (string tbl index) */
+	sh_u8: u32,		/* Section u8 */
+	sh_flags: u32,		/* Section flags */
+	sh_addr: u32,		/* Section virtual addr at execution */
+	sh_offset: u32,		/* Section file offset */
+	sh_size: u32,		/* Section size in bytes */
+	sh_link: u32,		/* Link to another section */
+	sh_info: u32,		/* Additional section information */
+	sh_addralign: u32,		/* Section alignment */
+	sh_entsize: u32,		/* Entry size if section holds table */
+}
+
+struct	Elf64_Shdr{
+	sh_name: u32,		/* Section name (string tbl index) */
+	sh_u8: u32,		/* Section u8 */
+	sh_flags: u64,		/* Section flags */
+	sh_addr: u64,		/* Section virtual addr at execution */
+	sh_offset: u64,		/* Section file offset */
+	sh_size: u64,		/* Section size in bytes */
+	sh_link: u32,		/* Link to another section */
+	sh_info: u32,		/* Additional section information */
+	sh_addralign: u64,		/* Section alignment */
+	sh_entsize: u64,		/* Entry size if section holds table */
+}
+
+/* Special section indices.  */
+
+const SHN_UNDEF: u32 = 0;		/* Undefined section */
+const SHN_LORESERVE: u32 = 0x0;		/* Start of reserved indices */
+const SHN_LOPROC: u32 = 0x0;		/* Start of processor-specific */
+const SHN_BEFORE: u32 = 0x0;		/* Order section before all others
+					   (Solaris).  */
+const SHN_AFTER: u32 = 0x1;		/* Order section after all others
+					   (Solaris).  */
+const SHN_HIPROC: u32 = 0xf;		/* End of processor-specific */
+const SHN_LOOS: u32 = 0x0;		/* Start of OS-specific */
+const SHN_HIOS: u32 = 0xf;		/* End of OS-specific */
+const SHN_ABS: u32 = 0x1;		/* Associated symbol is absolute */
+const SHN_COMMON: u32 = 0x2;		/* Associated symbol is common */
+const SHN_XINDEX: u32 = 0xf;		/* Index is in extra table.  */
+const SHN_HIRESERVE: u32 = 0xf;		/* End of reserved indices */
+
+/* Legal values for sh_u8 (section u8).  */
+
+const SHT_NULL: u32 = 0;		/* Section header table entry unused */
+const SHT_PROGBITS: u32 = 1;		/* Program data */
+const SHT_SYMTAB: u32 = 2;		/* Symbol table */
+const SHT_STRTAB: u32 = 3;		/* String table */
+const SHT_RELA: u32 = 4;		/* Relocation entries with addends */
+const SHT_HASH: u32 = 5;		/* Symbol hash table */
+const SHT_DYNAMIC: u32 = 6;		/* Dynamic linking information */
+const SHT_NOTE: u32 = 7;		/* Notes */
+const SHT_NOBITS: u32 = 8;		/* Program space with no data (bss) */
+const SHT_REL: u32 = 9;		/* Relocation entries, no addends */
+const SHT_SHLIB: u32 = 10;		/* Reserved */
+const SHT_DYNSYM: u32 = 11;		/* Dynamic linker symbol table */
+const SHT_INIT_ARRAY: u32 = 14;		/* Array of constructors */
+const SHT_FINI_ARRAY: u32 = 15;		/* Array of destructors */
+const SHT_PREINIT_ARRAY: u32 = 16;		/* Array of pre-constructors */
+const SHT_GROUP: u32 = 17;		/* Section group */
+const SHT_SYMTAB_SHNDX: u32 = 18;		/* Extended section indices */
+const SHT_NUM: u32 = 19;		/* Number of defined u8s.  */
+const SHT_LOOS: u32 = 0x0;	/* Start OS-specific.  */
+const SHT_GNU_ATTRIBUTES: u32 = 0x5;	/* Object attributes.  */
+const SHT_GNU_HASH: u32 = 0x6;	/* GNU-style hash table.  */
+const SHT_GNU_LIBLIST: u32 = 0x7;	/* Prelink library list */
+const SHT_CHECKSUM: u32 = 0x8;	/* Checksum for DSO content.  */
+const SHT_LOSUNW: u32 = 0xa;	/* Sun-specific low bound.  */
+const SHT_SUNW_move: u32 = 0xa;
+const SHT_SUNW_COMDAT: u32 = 0xb;
+const SHT_SUNW_syminfo: u32 = 0xc;
+const SHT_GNU_verdef: u32 = 0xd;	/* Version definition section.  */
+const SHT_GNU_verneed: u32 = 0xe;	/* Version needs section.  */
+const SHT_GNU_versym: u32 = 0xf;	/* Version symbol table.  */
+const SHT_HISUNW: u32 = 0xf;	/* Sun-specific high bound.  */
+const SHT_HIOS: u32 = 0xf;	/* End OS-specific u8 */
+const SHT_LOPROC: u32 = 0x0;	/* Start of processor-specific */
+const SHT_HIPROC: u32 = 0xf;	/* End of processor-specific */
+const SHT_LOUSER: u32 = 0x0;	/* Start of application-specific */
+const SHT_HIUSER: u32 = 0xf;	/* End of application-specific */
+
+/* Legal values for sh_flags (section flags).  */
+
+const SHF_WRITE: u32 = (1 << 0);	/* Writable */
+const SHF_ALLOC: u32 = (1 << 1);	/* Occupies memory during execution */
+const SHF_EXECINSTR: u32 = (1 << 2);	/* Executable */
+const SHF_MERGE: u32 = (1 << 4);	/* Might be merged */
+const SHF_STRINGS: u32 = (1 << 5);	/* Contains nul-terminated strings */
+const SHF_INFO_LINK: u32 = (1 << 6);	/* `sh_info' contains SHT index */
+const SHF_LINK_ORDER: u32 = (1 << 7);	/* Preserve order after combining */
+const SHF_OS_NONCONFORMING: u32 = (1 << 8);	/* Non-standard OS specific handling
+					   required */
+const SHF_GROUP: u32 = (1 << 9);	/* Section is member of a group.  */
+const SHF_TLS: u32 = (1 << 10);	/* Section hold thread-local data.  */
+const SHF_COMPRESSED: u32 = (1 << 11);	/* Section with compressed data. */
+const SHF_MASKOS: u32 = 0x0;	/* OS-specific.  */
+const SHF_MASKPROC: u32 = 0x0;	/* Processor-specific */
+const SHF_GNU_RETAIN: u32 = (1 << 21);  /* Not to be GCed by linker.  */
+const SHF_ORDERED: u32 = (1 << 30);	/* Special ordering requirement
+					   (Solaris).  */
+const SHF_EXCLUDE: u32 = (1u32 << 31);	/* Section is excluded unless
+					   referenced or allocated (Solaris).*/
+
+/* Section compression header.  Used when SHF_COMPRESSED is set.  */
+
+struct Elf32_Chdr {
+	ch_u8: u32,	/* Compression format.  */
+	ch_size: u32,	/* Uncompressed data size.  */
+	ch_addralign: u32,	/* Uncompressed data alignment.  */
+} 
+
+struct Elf64_Chdr{
+	ch_u8: u32,	/* Compression format.  */
+	ch_reserved: u32,
+	ch_size: u64,	/* Uncompressed data size.  */
+	ch_addralign: u64,	/* Uncompressed data alignment.  */
+}
+
+/* Legal values for ch_u32 (compression algorithm).  */
+const ELFCOMPRESS_ZLIB: u32 = 1;	   /* ZLIB/DEFLATE algorithm.  */
+const ELFCOMPRESS_LOOS: u32 = 0x0; /* Start of OS-specific.  */
+const ELFCOMPRESS_HIOS: u32 = 0xf; /* End of OS-specific.  */
+const ELFCOMPRESS_LOPROC: u32 = 0x0; /* Start of processor-specific.  */
+const ELFCOMPRESS_HIPROC: u32 = 0xf; /* End of processor-specific.  */
+
+/* Section group handling.  */
+const GRP_COMDAT: u32 = 0x1;		/* Mark group as COMDAT.  */
+
+/* Symbol table entry.  */
+
+struct Elf32_Sym {
+    st_name: u32,		/* Symbol name (string tbl index) */
+	st_value: u32,		/* Symbol value */
+	st_size: u32,		/* Symbol size */
+	st_info: u8,		/* Symbol u8 and binding */
+	st_other: u8,		/* Symbol visibility */
+	st_shndx: u16,		/* Section index */
+}
+
+struct Elf64_Sym {
+	st_name: u32,		/* Symbol name (string tbl index) */
+	st_info: u8,		/* Symbol u8 and binding */
+	st_other: u8,		/* Symbol visibility */
+	st_shndx: u16,		/* Section index */
+	st_value: u64,		/* Symbol value */
+	st_size: u64,		/* Symbol size */
+} 
+
+/* The syminfo section if available contains additional information about
+   every dynamic symbol.  */
+
+struct Elf32_Syminfo {
+	si_boundto: u16,		/* Direct bindings, symbol bound to */
+	si_flags: u16,			/* Per symbol flags */
+}
+
+struct Elf64_Syminfo {
+	si_boundto: u16,		/* Direct bindings, symbol bound to */
+	si_flags: u16,			/* Per symbol flags */
+}
+
+/* Possible values for si_boundto.  */
+const SYMINFO_BT_SELF: u16 = 0xf;	/* Symbol bound to self */
+const SYMINFO_BT_PARENT: u16 = 0xe;	/* Symbol bound to parent */
+const SYMINFO_BT_LOWRESERVE: u16 = 0x0;	/* Beginning of reserved entries */
+
+/* Possible bitmasks for si_flags.  */
+const SYMINFO_FLG_DIRECT: u16 = 0x1;	/* Direct bound symbol */
+const SYMINFO_FLG_PASSTHRU: u16 = 0x2;	/* Pass-thru symbol for translator */
+const SYMINFO_FLG_COPY: u16 = 0x4;	/* Symbol is a copy-reloc */
+const SYMINFO_FLG_LAZYLOAD: u16 = 0x8;	/* Symbol bound to object to be lazy
+					   loaded */
+/* Syminfo version values.  */
+const SYMINFO_NONE: u16 = 0;
+const SYMINFO_CURRENT: u16 = 1;
+const SYMINFO_NUM: u16 = 2;
+
+
+/* How to extract and insert information held in the st_info field.  */
+fn ELF32_ST_BIND(val: u8) -> u8 {
+    val >>4
+}
+
+fn ELF32_ST_TYPE(val: u8) -> u8 {
+    val & 0xf
+}
+
+fn ELF32_ST_INFO(bind: u8, _type: u8) -> u8 {
+    (_type << 4) + (bind & 0xf)
+} 
+//const ELF32_ST_BIND(val)		(((u8) (val)) >> 4)
+//const ELF32_ST_TYPE(val)		((val) & 0xf)
+//const ELF32_ST_INFO: u8 = b;ind, u8)	(((bind) << 4) + ((u8) & 0xf))
+
+/* Both Elf32_Sym and Elf64_Sym use the same one-byte st_info field.  */
+fn ELF64_ST_BIND(val: u8) -> u8 {
+    val >>4
+}
+
+fn ELF64_ST_TYPE(val: u8) -> u8 {
+    val & 0xf
+}
+
+fn ELF64_ST_INFO(bind: u8, _type: u8) -> u8 {
+    (_type << 4) + (bind & 0xf)
+}
+//const ELF64_ST_BIND(val)		ELF32_ST_BIND (val)
+//const ELF64_ST_TYPE(val)		ELF32_ST_TYPE (val)
+//const ELF64_ST_INFO: u8 = b;ind, u8)	ELF32_ST_INFO ((bind), (u8))
+
+/* Legal values for ST_BIND subfield of st_info (symbol binding).  */
+
+const STB_LOCAL: u8 = 0;		/* Local symbol */
+const STB_GLOBAL: u8 = 1;		/* Global symbol */
+const STB_WEAK: u8 = 2;		/* Weak symbol */
+const STB_NUM: u8 = 3;		/* Number of defined u8s.  */
+const STB_LOOS: u8 = 10;		/* Start of OS-specific */
+const STB_GNU_UNIQUE: u8 = 10;		/* Unique symbol.  */
+const STB_HIOS: u8 = 12;		/* End of OS-specific */
+const STB_LOPROC: u8 = 13;		/* Start of processor-specific */
+const STB_HIPROC: u8 = 15;		/* End of processor-specific */
+
+/* Legal values for ST_TYPE subfield of st_info (symbol u8).  */
+
+const STT_NOTYPE: u8 = 0;		/* Symbol u8 is unspecified */
+const STT_OBJECT: u8 = 1;		/* Symbol is a data object */
+const STT_FUNC: u8 = 2;		/* Symbol is a code object */
+const STT_SECTION: u8 = 3;		/* Symbol associated with a section */
+const STT_FILE: u8 = 4;		/* Symbol's name is file name */
+const STT_COMMON: u8 = 5;		/* Symbol is a common data object */
+const STT_TLS: u8 = 6;		/* Symbol is thread-local data object*/
+const STT_NUM: u8 = 7;		/* Number of defined u8s.  */
+const STT_LOOS: u8 = 10;		/* Start of OS-specific */
+const STT_GNU_IFUNC: u8 = 10;		/* Symbol is indirect code object */
+const STT_HIOS: u8 = 12;		/* End of OS-specific */
+const STT_LOPROC: u8 = 13;		/* Start of processor-specific */
+const STT_HIPROC: u8 = 15;		/* End of processor-specific */
+
+
+/* Symbol table indices are found in the hash buckets and chain table
+   of a symbol hash table section.  This special index value indicates
+   the end of a chain, meaning no further symbols are found in that bucket.  */
+
+const STN_UNDEF: u8 = 0;		/* End of a chain.  */
+
+
+/* How to extract and insert information held in the st_other field.  */
+
+//const ELF32_ST_VISIBILITY(o)	((o) & 0x03)
+fn ELF32_ST_VISIBILITY(o: u8) -> u8 {
+    o & 0x3
+}
+
+/* For ELF64 the definitions are the same.  */
+//const ELF64_ST_VISIBILITY(o)	ELF32_ST_VISIBILITY (o)
+fn ELF64_ST_VISIBILITY(o: u8) -> u8 {
+    o & 0x3
+}
+
+/* Symbol visibility specification encoded in the st_other field.  */
+const STV_DEFAULT: u8 = 0;		/* Default symbol visibility rules */
+const STV_INTERNAL: u8 = 1;		/* Processor specific hidden class */
+const STV_HIDDEN: u8 = 2;		/* Sym unavailable in other modules */
+const STV_PROTECTED: u8 = 3;		/* Not preemptible, not exported */
+
+
+/* Relocation table entry without addend (in section of u8 SHT_REL).  */
+
+struct Elf32_Rel {
+	r_offset: u32,		/* Address */
+	r_info: u32,			/* Relocation u8 and symbol index */
+}
+
+/* I have seen two different definitions of the Elf64_Rel and
+   Elf64_Rela structures, so we'll leave them out until Novell (or
+   whoever) gets their act together.  */
+/* The following, at least, is used on Sparc v9, MIPS, and Alpha.  */
+
+struct Elf64_Rel {
+	r_offset: u64,		/* Address */
+	r_info: u64,			/* Relocation u8 and symbol index */
+}
+
+/* Relocation table entry with addend (in section of u8 SHT_RELA).  */
+
+struct Elf32_Rela {
+	r_offset: u32,		/* Address */
+	r_info: u32,			/* Relocation u8 and symbol index */
+    r_addend: i32,		/* Addend */
+}
+
+struct Elf64_Rela {
+	r_offset: u64,		/* Address */
+	r_info: u64,			/* Relocation u8 and symbol index */
+    r_addend: i64,		/* Addend */
+}
+
+/* How to extract and insert information held in the r_info field.  */
+/*
+const ELF32_R_SYM(val)		((val) >> 8)
+const ELF32_R_TYPE(val)		((val) & 0xff)
+const ELF32_R_INFO(sym, u8)		(((sym) << 8) + ((u8) & 0xff))
+
+const ELF64_R_SYM(i)			((i) >> 32)
+const ELF64_R_TYPE(i)			((i) & 0xffffffff)
+const ELF64_R_INFO(sym,u8)		((((u64) (sym)) << 32) + (u8))
+*/
+fn ELF32_R_SYM(val: u16) -> u8 {
+    (val >> 8) as u8
+}
+
+fn ELF32_R_TYPE(val: u16) -> u8 {
+    (val & 0xff) as u8
+}
+
+fn ELF64_R_SYM(i: u64) -> u32 {
+    (i >> 32) as u32
+}
+
+fn ELF64_R_TYPE(i: u64) -> u32 {
+    (i & 0xffffffff) as u32
+}
+
+fn ELF64_R_INFO(sym: u32, _type: u32) -> u64 {
+    (sym as u64) << 32 + _type as u64
+}
+
+/* Program segment header.  */
+
+struct Elf32_Phdr {
+	p_u8: u32,			/* Segment u8 */
+	p_offset: u32,		/* Segment file offset */
+	p_vaddr: u32,		/* Segment virtual address */
+	p_paddr: u32,		/* Segment physical address */
+	p_filesz: u32,		/* Segment size in file */
+	p_memsz: u32,		/* Segment size in memory */
+	p_flags: u32,		/* Segment flags */
+	p_align: u32,		/* Segment alignment */
+}
+
+struct Elf64_Phdr{
+	p_u8: u32,			/* Segment u8 */
+	p_flags: u32,		/* Segment flags */
+	p_offset: u64,		/* Segment file offset */
+	p_vaddr: u64,		/* Segment virtual address */
+	p_paddr: u64,		/* Segment physical address */
+	p_filesz: u64,		/* Segment size in file */
+	p_memsz: u64,		/* Segment size in memory */
+	p_align: u64,		/* Segment alignment */
+} 
+
+/* Special value for e_phnum.  This indicates that the real number of
+   program headers is too large to fit into e_phnum.  Instead the real
+   value is in the field sh_info of section 0.  */
+
+const PN_XNUM: u16 = 0xf;
+
+/* Legal values for p_u8 (segment u8).  */
+
+const PT_NULL: u32 = 0;		/* Program header table entry unused */
+const PT_LOAD: u32 = 1;		/* Loadable program segment */
+const PT_DYNAMIC: u32 = 2;		/* Dynamic linking information */
+const PT_INTERP: u32 = 3;		/* Program interpreter */
+const PT_NOTE: u32 = 4;		/* Auxiliary information */
+const PT_SHLIB: u32 = 5;		/* Reserved */
+const PT_PHDR: u32 = 6;		/* Entry for header table itself */
+const PT_TLS: u32 = 7;		/* Thread-local storage segment */
+const PT_NUM: u32 = 8;		/* Number of defined u8s */
+const PT_LOOS: u32 = 0x0;	/* Start of OS-specific */
+const PT_GNU_EH_FRAME: u32 = 0x0;	/* GCC .eh_frame_hdr segment */
+const PT_GNU_STACK: u32 = 0x1;	/* Indicates stack executability */
+const PT_GNU_RELRO: u32 = 0x2;	/* Read-only after relocation */
+const PT_GNU_PROPERTY: u32 = 0x3;	/* GNU property */
+const PT_LOSUNW: u32 = 0xa;
+const PT_SUNWBSS: u32 = 0xa;	/* Sun Specific segment */
+const PT_SUNWSTACK: u32 = 0xb;	/* Stack segment */
+const PT_HISUNW: u32 = 0xf;
+const PT_HIOS: u32 = 0xf;	/* End of OS-specific */
+const PT_LOPROC: u32 = 0x0;	/* Start of processor-specific */
+const PT_HIPROC: u32 = 0xf;	/* End of processor-specific */
+
+/* Legal values for p_flags (segment flags).  */
+
+const PF_X: u32 = (1 << 0);	/* Segment is executable */
+const PF_W: u32 = (1 << 1);	/* Segment is writable */
+const PF_R: u32 = (1 << 2);	/* Segment is readable */
+const PF_MASKOS: u32 = 0x0;	/* OS-specific */
+const PF_MASKPROC: u32 = 0x0;	/* Processor-specific */
+
+/* Legal values for note segment descriptor u32s for core files. */
+
+const NT_PRSTATUS: u32 = 1;		/* Contains copy of prstatus struct */
+const NT_PRFPREG: u32 = 2;		/* Contains copy of fpregset
+					   struct.  */
+const NT_FPREGSET: u32 = 2;		/* Contains copy of fpregset struct */
+const NT_PRPSINFO: u32 = 3;		/* Contains copy of prpsinfo struct */
+const NT_PRXREG: u32 = 4;		/* Contains copy of prxregset struct */
+const NT_TASKSTRUCT: u32 = 4;		/* Contains copy of task structure */
+const NT_PLATFORM: u32 = 5;		/* String from sysinfo(SI_PLATFORM) */
+const NT_AUXV: u32 = 6;		/* Contains copy of auxv array */
+const NT_GWINDOWS: u32 = 7;		/* Contains copy of gwindows struct */
+const NT_ASRS: u32 = 8;		/* Contains copy of asrset struct */
+const NT_PSTATUS: u32 = 10;		/* Contains copy of pstatus struct */
+const NT_PSINFO: u32 = 13;		/* Contains copy of psinfo struct */
+const NT_PRCRED: u32 = 14;		/* Contains copy of prcred struct */
+const NT_UTSNAME: u32 = 15;		/* Contains copy of utsname struct */
+const NT_LWPSTATUS: u32 = 16;		/* Contains copy of lwpstatus struct */
+const NT_LWPSINFO: u32 = 17;		/* Contains copy of lwpinfo struct */
+const NT_PRFPXREG: u32 = 20;		/* Contains copy of fprxregset struct */
+const NT_SIGINFO: u32 = 0x9;	/* Contains copy of siginfo_t,
+					   size might increase */
+const NT_FILE: u32 = 0x5;	/* Contains information about mapped
+					   files */
+const NT_PRXFPREG: u32 = 0xf;	/* Contains copy of user_fxsr_struct */
+const NT_PPC_VMX: u32 = 0x0;		/* PowerPC Altivec/VMX registers */
+const NT_PPC_SPE: u32 = 0x1;		/* PowerPC SPE/EVR registers */
+const NT_PPC_VSX: u32 = 0x2;		/* PowerPC VSX registers */
+const NT_PPC_TAR: u32 = 0x3;		/* Target Address Register */
+const NT_PPC_PPR: u32 = 0x4;		/* Program Priority Register */
+const NT_PPC_DSCR: u32 = 0x5;		/* Data Stream Control Register */
+const NT_PPC_EBB: u32 = 0x6;		/* Event Based Branch Registers */
+const NT_PPC_PMU: u32 = 0x7;		/* Performance Monitor Registers */
+const NT_PPC_TM_CGPR: u32 = 0x8;		/* TM checkpointed GPR Registers */
+const NT_PPC_TM_CFPR: u32 = 0x9;		/* TM checkpointed FPR Registers */
+const NT_PPC_TM_CVMX: u32 = 0xa;		/* TM checkpointed VMX Registers */
+const NT_PPC_TM_CVSX: u32 = 0xb;		/* TM checkpointed VSX Registers */
+const NT_PPC_TM_SPR: u32 = 0xc;		/* TM Special Purpose Registers */
+const NT_PPC_TM_CTAR: u32 = 0xd;		/* TM checkpointed Target Address
+					   Register */
+const NT_PPC_TM_CPPR: u32 = 0xe;		/* TM checkpointed Program Priority
+					   Register */
+const NT_PPC_TM_CDSCR: u32 = 0xf;		/* TM checkpointed Data Stream Control
+					   Register */
+const NT_PPC_PKEY: u32 = 0x0;		/* Memory Protection Keys
+					   registers.  */
+const NT_386_TLS: u32 = 0x0;		/* i386 TLS slots (struct user_desc) */
+const NT_386_IOPERM: u32 = 0x1;		/* x86 io permission bitmap (1=deny) */
+const NT_X86_XSTATE: u32 = 0x2;		/* x86 extended state using xsave */
+const NT_S390_HIGH_GPRS: u32 = 0x0;	/* s390 upper register halves */
+const NT_S390_TIMER: u32 = 0x1;		/* s390 timer register */
+const NT_S390_TODCMP: u32 = 0x2;		/* s390 TOD clock comparator register */
+const NT_S390_TODPREG: u32 = 0x3;		/* s390 TOD programmable register */
+const NT_S390_CTRS: u32 = 0x4;		/* s390 control registers */
+const NT_S390_PREFIX: u32 = 0x5;		/* s390 prefix register */
+const NT_S390_LAST_BREAK: u32 = 0x6;	/* s390 breaking event address */
+const NT_S390_SYSTEM_CALL: u32 = 0x7;	/* s390 system call restart data */
+const NT_S390_TDB: u32 = 0x8;		/* s390 transaction diagnostic block */
+const NT_S390_VXRS_LOW: u32 = 0x9;	/* s390 vector registers 0-15
+					   upper half.  */
+const NT_S390_VXRS_HIGH: u32 = 0xa;	/* s390 vector registers 16-31.  */
+const NT_S390_GS_CB: u32 = 0xb;		/* s390 guarded storage registers.  */
+const NT_S390_GS_BC: u32 = 0xc;		/* s390 guarded storage
+					   broadcast control block.  */
+const NT_S390_RI_CB: u32 = 0xd;		/* s390 runtime instrumentation.  */
+const NT_ARM_VFP: u32 = 0x0;		/* ARM VFP/NEON registers */
+const NT_ARM_TLS: u32 = 0x1;		/* ARM TLS register */
+const NT_ARM_HW_BREAK: u32 = 0x2;		/* ARM hardware breakpoint registers */
+const NT_ARM_HW_WATCH: u32 = 0x3;		/* ARM hardware watchpoint registers */
+const NT_ARM_SYSTEM_CALL: u32 = 0x4;	/* ARM system call number */
+const NT_ARM_SVE: u32 = 0x5;		/* ARM Scalable Vector Extension
+					   registers */
+const NT_ARM_PAC_MASK: u32 = 0x6;		/* ARM pointer authentication
+					   code masks.  */
+const NT_ARM_PACA_KEYS: u32 = 0x7;	/* ARM pointer authentication
+					   address keys.  */
+const NT_ARM_PACG_KEYS: u32 = 0x8;	/* ARM pointer authentication
+					   generic key.  */
+const NT_ARM_TAGGED_ADDR_CTRL: u32 = 0x9;	/* AArch64 tagged address
+					   control.  */
+const NT_ARM_PAC_ENABLED_KEYS: u32 = 0xa;	/* AArch64 pointer authentication
+					   enabled keys.  */
+const NT_VMCOREDD: u32 = 0x0;		/* Vmcore Device Dump Note.  */
+const NT_MIPS_DSP: u32 = 0x0;		/* MIPS DSP ASE registers.  */
+const NT_MIPS_FP_MODE: u32 = 0x1;		/* MIPS floating-point mode.  */
+const NT_MIPS_MSA: u32 = 0x2;		/* MIPS SIMD registers.  */
+
+/* Legal values for the note segment descriptor u32s for object files.  */
+
+const NT_VERSION: u32 = 1;		/* Contains a version string.  */
+
+
+/* Dynamic section entry.  */
+
+struct Elf32_Dyn {
+  d_tag: i32,			/* Dynamic entry u8 */
+  union
+    {
+	d_val: u32,			/* Integer value */
+	d_ptr: u32,			/* Address value */
+    } d_un;
+}
+
+struct Elf64_Dyn {
+  i64	d_tag;			/* Dynamic entry u8 */
+  union
+    {
+	d_val: u64,		/* Integer value */
+	d_ptr: u64,			/* Address value */
+    } d_un;
+}
+
+/* Legal values for d_tag (dynamic entry u8).  */
+
+const DT_NULL: u8 = 0;		/* Marks end of dynamic section */
+const DT_NEEDED: u8 = 1;		/* Name of needed library */
+const DT_PLTRELSZ: u8 = 2;		/* Size in bytes of PLT relocs */
+const DT_PLTGOT: u8 = 3;		/* Processor defined value */
+const DT_HASH: u8 = 4;		/* Address of symbol hash table */
+const DT_STRTAB: u8 = 5;		/* Address of string table */
+const DT_SYMTAB: u8 = 6;		/* Address of symbol table */
+const DT_RELA: u8 = 7;		/* Address of Rela relocs */
+const DT_RELASZ: u8 = 8;		/* Total size of Rela relocs */
+const DT_RELAENT: u8 = 9;		/* Size of one Rela reloc */
+const DT_STRSZ: u8 = 10;		/* Size of string table */
+const DT_SYMENT: u8 = 11;		/* Size of one symbol table entry */
+const DT_INIT: u8 = 12;		/* Address of init function */
+const DT_FINI: u8 = 13;		/* Address of termination function */
+const DT_SONAME: u8 = 14;		/* Name of shared object */
+const DT_RPATH: u8 = 15;		/* Library search path (deprecated) */
+const DT_SYMBOLIC: u8 = 16;		/* Start symbol search here */
+const DT_REL: u8 = 17;		/* Address of Rel relocs */
+const DT_RELSZ: u8 = 18;		/* Total size of Rel relocs */
+const DT_RELENT: u8 = 19;		/* Size of one Rel reloc */
+const DT_PLTREL: u8 = 20;		/* Type of reloc in PLT */
+const DT_DEBUG: u8 = 21;		/* For debugging; unspecified */
+const DT_TEXTREL: u8 = 22;		/* Reloc might modify .text */
+const DT_JMPREL: u8 = 23;		/* Address of PLT relocs */
+const DT_BIND_NOW: u8 = 24;		/* Process relocations of object */
+const DT_INIT_ARRAY: u8 = 25;		/* Array with addresses of init fct */
+const DT_FINI_ARRAY: u8 = 26;		/* Array with addresses of fini fct */
+const DT_INIT_ARRAYSZ: u8 = 27;		/* Size in bytes of DT_INIT_ARRAY */
+const DT_FINI_ARRAYSZ: u8 = 28;		/* Size in bytes of DT_FINI_ARRAY */
+const DT_RUNPATH: u8 = 29;		/* Library search path */
+const DT_FLAGS: u8 = 30;		/* Flags for the object being loaded */
+const DT_ENCODING: u8 = 32;		/* Start of encoded range */
+const DT_PREINIT_ARRAY: u8 = 32;		/* Array with addresses of preinit fct*/
+const DT_PREINIT_ARRAYSZ: u8 = 33;		/* size in bytes of DT_PREINIT_ARRAY */
+const DT_SYMTAB_SHNDX: u8 = 34;		/* Address of SYMTAB_SHNDX section */
+const DT_NUM: u8 = 35;		/* Number used */
+const DT_LOOS: u8 = 0xd;	/* Start of OS-specific */
+const DT_HIOS: u8 = 0x0;	/* End of OS-specific */
+const DT_LOPROC: u8 = 0x0;	/* Start of processor-specific */
+const DT_HIPROC: u8 = 0xf;	/* End of processor-specific */
+const DT_PROCNUM: u32 = DT_MIPS_NUM;	/* Most used by any processor */
+
+/* DT_* entries which fall between DT_VALRNGHI & DT_VALRNGLO use the
+   Dyn.d_un.d_val field of the Elf*_Dyn structure.  This follows Sun's
+   approach.  */
+const DT_VALRNGLO: u8 = 0x0;
+const DT_GNU_PRELINKED: u8 = 0x5;	/* Prelinking timestamp */
+const DT_GNU_CONFLICTSZ: u8 = 0x6;	/* Size of conflict section */
+const DT_GNU_LIBLISTSZ: u8 = 0x7;	/* Size of library list */
+const DT_CHECKSUM: u8 = 0x8;
+const DT_PLTPADSZ: u8 = 0x9;
+const DT_MOVEENT: u8 = 0xa;
+const DT_MOVESZ: u8 = 0xb;
+const DT_FEATURE_1: u8 = 0xc;	/* Feature selection (DTF_*).  */
+const DT_POSFLAG_1: u8 = 0xd;	/* Flags for DT_* entries, effecting
+					   the following DT_* entry.  */
+const DT_SYMINSZ: u8 = 0xe;	/* Size of syminfo table (in bytes) */
+const DT_SYMINENT: u8 = 0xf;	/* Entry size of syminfo */
+const DT_VALRNGHI: u8 = 0xf;
+//const DT_VALTAGIDX(tag)	(DT_VALRNGHI - (tag))	/* Reverse order! */
+fn DT_VALTAGIDX(tag: u8) -> u8 {
+    DT_VALRNGHI - tag
+}
+const DT_VALNUM: u8 = 12;
+
+/* DT_* entries which fall between DT_ADDRRNGHI & DT_ADDRRNGLO use the
+   Dyn.d_un.d_ptr field of the Elf*_Dyn structure.
+
+   If any adjustment is made to the ELF object after it has been
+   built these entries will need to be adjusted.  */
+const DT_ADDRRNGLO: u8 = 0x0;
+const DT_GNU_HASH: u8 = 0x5;	/* GNU-style hash table.  */
+const DT_TLSDESC_PLT: u8 = 0x6;
+const DT_TLSDESC_GOT: u8 = 0x7;
+const DT_GNU_CONFLICT: u8 = 0x8;	/* Start of conflict section */
+const DT_GNU_LIBLIST: u8 = 0x9;	/* Library list */
+const DT_CONFIG: u8 = 0xa;	/* Configuration information.  */
+const DT_DEPAUDIT: u8 = 0xb;	/* Dependency auditing.  */
+const DT_AUDIT: u8 = 0xc;	/* Object auditing.  */
+const DT_PLTPAD: u8 = 0xd;	/* PLT padding.  */
+const DT_MOVETAB: u8 = 0xe;	/* Move table.  */
+const DT_SYMINFO: u8 = 0xf;	/* Syminfo table.  */
+const DT_ADDRRNGHI: u8 = 0xf;
+//const DT_ADDRTAGIDX(tag)	(DT_ADDRRNGHI - (tag))	/* Reverse order! */
+fn DT_ADDRTAGIDX(tag: u8) -> u8 {
+    DT_ADDRRNGHI - tag
+}
+const DT_ADDRNUM: u8 = 11;
+
+/* The versioning entry u8s.  The next are defined as part of the
+   GNU extension.  */
+const DT_VERSYM: u8 = 0x0;
+
+const DT_RELACOUNT: u8 = 0x9;
+const DT_RELCOUNT: u8 = 0xa;
+
+/* These were chosen by Sun.  */
+const DT_FLAGS_1: u8 = 0xb;	/* State flags, see DF_1_* below.  */
+const DT_VERDEF: u8 = 0xc;	/* Address of version definition
+					   table */
+const DT_VERDEFNUM: u8 = 0xd;	/* Number of version definitions */
+const DT_VERNEED: u8 = 0xe;	/* Address of table with needed
+					   versions */
+const DT_VERNEEDNUM: u8 = 0xf;	/* Number of needed versions */
+//const DT_VERSIONTAGIDX(tag)	(DT_VERNEEDNUM - (tag))	/* Reverse order! */
+fn DT_VERSIONTAGIDX(tag: u8) -> u8 {
+    DT_VERSIONTAGNUM - tag
+}
+const DT_VERSIONTAGNUM: u8 = 16;
+
+/* Sun added these machine-independent extensions in the "processor-specific"
+   range.  Be compatible.  */
+const DT_AUXILIARY: u8 = 0xd;      /* Shared object to load before self */
+const DT_FILTER: u8 = 0xf;      /* Shared object to get values from */
+//const DT_EXTRATAGIDX(tag)	((u32)-((i32) (tag) <<1>>1)-1)
+fn DT_EXTRATAGIDX(tag: u32) -> u32 {
+    (((tag as i64) << 1 >> 1) - 1) as u32
+}
+const DT_EXTRANUM: u8 = 3;
+
+/* Values of `d_un.d_val' in the DT_FLAGS entry.  */
+const DF_ORIGIN: u8 = 0x1;	/* Object may use DF_ORIGIN */
+const DF_SYMBOLIC: u8 = 0x2;	/* Symbol resolutions starts here */
+const DF_TEXTREL: u8 = 0x4;	/* Object contains text relocations */
+const DF_BIND_NOW: u8 = 0x8;	/* No lazy binding for this object */
+const DF_STATIC_TLS: u8 = 0x0;	/* Module uses the static TLS model */
+
+/* State flags selectable in the `d_un.d_val' element of the DT_FLAGS_1
+   entry in the dynamic section.  */
+const DF_1_NOW: u8 = 0x1;	/* Set RTLD_NOW for this object.  */
+const DF_1_GLOBAL: u8 = 0x2;	/* Set RTLD_GLOBAL for this object.  */
+const DF_1_GROUP: u8 = 0x4;	/* Set RTLD_GROUP for this object.  */
+const DF_1_NODELETE: u8 = 0x8;	/* Set RTLD_NODELETE for this object.*/
+const DF_1_LOADFLTR: u8 = 0x0;	/* Trigger filtee loading at runtime.*/
+const DF_1_INITFIRST: u8 = 0x0;	/* Set RTLD_INITFIRST for this object*/
+const DF_1_NOOPEN: u8 = 0x0;	/* Set RTLD_NOOPEN for this object.  */
+const DF_1_ORIGIN: u8 = 0x0;	/* $ORIGIN must be handled.  */
+const DF_1_DIRECT: u8 = 0x0;	/* Direct binding enabled.  */
+const DF_1_TRANS: u8 = 0x0;
+const DF_1_INTERPOSE: u8 = 0x0;	/* Object is used to interpose.  */
+const DF_1_NODEFLIB: u8 = 0x0;	/* Ignore default lib search path.  */
+const DF_1_NODUMP: u8 = 0x0;	/* Object can't be dldump'ed.  */
+const DF_1_CONFALT: u8 = 0x0;	/* Configuration alternative created.*/
+const DF_1_ENDFILTEE: u8 = 0x0;	/* Filtee terminates filters search. */
+const DF_1_DISPRELDNE: u8 = 0x0;	/* Disp reloc applied at build time. */
+const DF_1_DISPRELPND: u8 = 0x0;	/* Disp reloc applied at run-time.  */
+const DF_1_NODIRECT: u8 = 0x0;	/* Object has no-direct binding. */
+const DF_1_IGNMULDEF: u8 = 0x0;
+const DF_1_NOKSYMS: u8 = 0x0;
+const DF_1_NOHDR: u8 = 0x0;
+const DF_1_EDITED: u8 = 0x0;	/* Object is modified after built.  */
+const DF_1_NORELOC: u8 = 0x0;
+const DF_1_SYMINTPOSE: u8 = 0x0;	/* Object has individual interposers.  */
+const DF_1_GLOBAUDIT: u8 = 0x0;	/* Global auditing required.  */
+const DF_1_SINGLETON: u8 = 0x0;	/* Singleton symbols are used.  */
+const DF_1_STUB: u8 = 0x0;
+const DF_1_PIE: u8 = 0x0;
+const DF_1_KMOD: u8 = 0x0;
+const DF_1_WEAKFILTER: u8 = 0x0;
+const DF_1_NOCOMMON: u8 = 0x0;
+
+/* Flags for the feature selection in DT_FEATURE_1.  */
+const DTF_1_PARINIT: u8 = 0x1;
+const DTF_1_CONFEXP: u8 = 0x2;
+
+/* Flags in the DT_POSFLAG_1 entry effecting only the next DT_* entry.  */
+const DF_P1_LAZYLOAD: u8 = 0x1;	/* Lazyload following object.  */
+const DF_P1_GROUPPERM: u8 = 0x2;	/* Symbols from next object are not
+					   generally available.  */
+
+/* Version definition sections.  */
+
+struct Elf32_Verdef {
+	vd_version: u16,		/* Version revision */
+	vd_flags: u16,		/* Version information */
+	vd_ndx: u16,			/* Version Index */
+	vd_cnt: u16,			/* Number of associated aux entries */
+	vd_hash: u32,		/* Version name hash value */
+	vd_aux: u32,			/* Offset in bytes to verdaux array */
+	vd_next: u32,		/* Offset in bytes to next verdef
+					   entry */
+}
+
+struct Elf64_Verdef {
+	vd_version: u16,		/* Version revision */
+	vd_flags: u16,		/* Version information */
+	vd_ndx: u16,			/* Version Index */
+	vd_cnt: u16,			/* Number of associated aux entries */
+	vd_hash: u32,		/* Version name hash value */
+	vd_aux: u32,			/* Offset in bytes to verdaux array */
+	vd_next: u32,		/* Offset in bytes to next verdef
+					   entry */
+}
+
+
+/* Legal values for vd_version (version revision).  */
+const VER_DEF_NONE: u16 = 0;		/* No version */
+const VER_DEF_CURRENT: u16 = 1;		/* Current version */
+const VER_DEF_NUM: u16 = 2;		/* Given version number */
+
+/* Legal values for vd_flags (version information flags).  */
+const VER_FLG_BASE: u16 = 0x1;		/* Version definition of file itself */
+const VER_FLG_WEAK: u16 = 0x2;		/* Weak version identifier */
+
+/* Versym symbol index values.  */
+const VER_NDX_LOCAL: u16 = 0;	/* Symbol is local.  */
+const VER_NDX_GLOBAL: u16 = 1;	/* Symbol is global.  */
+const VER_NDX_LORESERVE: u16 = 0x0;	/* Beginning of reserved entries.  */
+const VER_NDX_ELIMINATE: u16 = 0x1;	/* Symbol is to be eliminated.  */
+
+/* Auxiliary version information.  */
+
+struct Elf32_Verdaux {
+	vda_name: u32,		/* Version or dependency names */
+	vda_next: u32,		/* Offset in bytes to next verdaux
+					   entry */
+}
+
+struct Elf64_Verdaux {
+	vda_name: u32,		/* Version or dependency names */
+	vda_next: u32,		/* Offset in bytes to next verdaux
+					   entry */
+}
+
+
+/* Version dependency section.  */
+
+struct Elf32_Verneed {
+	vn_version: u16,		/* Version of structure */
+	vn_cnt: u16,			/* Number of associated aux entries */
+	vn_file: u32,		/* Offset of filename for this
+					   dependency */
+	vn_aux: u32,			/* Offset in bytes to vernaux array */
+	vn_next: u32,		/* Offset in bytes to next verneed
+					   entry */
+}
+
+struct Elf64_Verneed {
+	vn_version: u16,		/* Version of structure */
+	vn_cnt: u16,			/* Number of associated aux entries */
+	vn_file: u32,		/* Offset of filename for this
+					   dependency */
+	vn_aux: u32,			/* Offset in bytes to vernaux array */
+	vn_next: u32,		/* Offset in bytes to next verneed
+					   entry */
+}
+
+
+/* Legal values for vn_version (version revision).  */
+const VER_NEED_NONE: u16 = 0;		/* No version */
+const VER_NEED_CURRENT: u16 = 1;		/* Current version */
+const VER_NEED_NUM: u16 = 2;		/* Given version number */
+
+/* Auxiliary needed version information.  */
+
+struct Elf32_Vernaux {
+	vna_hash: u32,		/* Hash value of dependency name */
+	vna_flags: u16,		/* Dependency specific information */
+	vna_other: u16,		/* Unused */
+	vna_name: u32,		/* Dependency name string offset */
+	vna_next: u32,		/* Offset in bytes to next vernaux
+					   entry */
+}
+
+struct Elf64_Vernaux {
+	vna_hash: u32,		/* Hash value of dependency name */
+	vna_flags: u16,		/* Dependency specific information */
+	vna_other: u16,		/* Unused */
+	vna_name: u32,		/* Dependency name string offset */
+	vna_next: u32,		/* Offset in bytes to next vernaux
+					   entry */
+}
+
+
+/* Legal values for vna_flags.  */
+const VER_FLG_WEAK: u16 = 0x2;		/* Weak version identifier */
+
+
+/* Auxiliary vector.  */
+
+/* This vector is normally only used by the program interpreter.  The
+   usual definition in an ABI supplement uses the name auxv_t.  The
+   vector is not usually defined in a standard <elf.h> file, but it
+   can't hurt.  We rename it to avoid conflicts.  The sizes of these
+   u8s are an arrangement between the exec server and the program
+   interpreter, so we don't fully specify them here.  */
+
+struct Elf32_auxv_t {
+  a_u8: u32, 	/* Entry u8 */
+  union
+    {
+      uint32_t a_val;		/* Integer value */
+      /* We use to have pointer elements added here.  We cannot do that,
+	 though, since it does not work when using 32-bit definitions
+	 on 64-bit platforms and vice versa.  */
+    } a_un;
+}
+
+struct Elf64_auxv_t {
+  a_u8: u64,		/* Entry u8 */
+  union
+    {
+      uint64_t a_val;		/* Integer value */
+      /* We use to have pointer elements added here.  We cannot do that,
+	 though, since it does not work when using 32-bit definitions
+	 on 64-bit platforms and vice versa.  */
+    } a_un;
+} 
+
+/* Legal values for a_u8 (entry u8).  */
+
+const AT_NULL: u32 = 0;		/* End of vector */
+const AT_IGNORE: u32 = 1;		/* Entry should be ignored */
+const AT_EXECFD: u32 = 2;		/* File descriptor of program */
+const AT_PHDR: u32 = 3;		/* Program headers for program */
+const AT_PHENT: u32 = 4;		/* Size of program header entry */
+const AT_PHNUM: u32 = 5;		/* Number of program headers */
+const AT_PAGESZ: u32 = 6;		/* System page size */
+const AT_BASE: u32 = 7;		/* Base address of interpreter */
+const AT_FLAGS: u32 = 8;		/* Flags */
+const AT_ENTRY: u32 = 9;		/* Entry point of program */
+const AT_NOTELF: u32 = 10;		/* Program is not ELF */
+const AT_UID: u32 = 11;		/* Real uid */
+const AT_EUID: u32 = 12;		/* Effective uid */
+const AT_GID: u32 = 13;		/* Real gid */
+const AT_EGID: u32 = 14;		/* Effective gid */
+const AT_CLKTCK: u32 = 17;		/* Frequency of times() */
+
+/* Some more special a_u32 values describing the hardware.  */
+const AT_PLATFORM: u32 = 15;		/* String identifying platform.  */
+const AT_HWCAP: u32 = 16;		/* Machine-dependent hints about
+					   processor capabilities.  */
+
+/* This entry gives some information about the FPU initialization
+   performed by the kernel.  */
+const AT_FPUCW: u32 = 18;		/* Used FPU control word.  */
+
+/* Cache block sizes.  */
+const AT_DCACHEBSIZE: u32 = 19;		/* Data cache block size.  */
+const AT_ICACHEBSIZE: u32 = 20;		/* Instruction cache block size.  */
+const AT_UCACHEBSIZE: u32 = 21;		/* Unified cache block size.  */
+
+/* A special ignored value for PPC, used by the kernel to control the
+   interpretation of the AUXV. Must be > 16.  */
+const AT_IGNOREPPC: u32 = 22;		/* Entry should be ignored.  */
+
+const AT_SECURE: u32 = 23;		/* Boolean, was exec setuid-like?  */
+
+const AT_BASE_PLATFORM: u32 = 24;		/* String identifying real platforms.*/
+
+const AT_RANDOM: u32 = 25;		/* Address of 16 random bytes.  */
+
+const AT_HWCAP2: u32 = 26;		/* More machine-dependent hints about
+					   processor capabilities.  */
+
+const AT_EXECFN: u32 = 31;		/* Filename of executable.  */
+
+/* Pointer to the global system page used for system calls and other
+   nice things.  */
+const AT_SYSINFO: u32 = 32;
+const AT_SYSINFO_EHDR: u32 = 33;
+
+/* Shapes of the caches.  Bits 0-3 contains associativity; bits 4-7 contains
+   log2 of line size; mask those to get cache size.  */
+const AT_L1I_CACHESHAPE: u32 = 34;
+const AT_L1D_CACHESHAPE: u32 = 35;
+const AT_L2_CACHESHAPE: u32 = 36;
+const AT_L3_CACHESHAPE: u32 = 37;
+
+/* Shapes of the caches, with more room to describe them.
+   *GEOMETRY are comprised of cache line size in bytes in the bottom 16 bits
+   and the cache associativity in the next 16 bits.  */
+const AT_L1I_CACHESIZE: u32 = 40;
+const AT_L1I_CACHEGEOMETRY: u32 = 41;
+const AT_L1D_CACHESIZE: u32 = 42;
+const AT_L1D_CACHEGEOMETRY: u32 = 43;
+const AT_L2_CACHESIZE: u32 = 44;
+const AT_L2_CACHEGEOMETRY: u32 = 45;
+const AT_L3_CACHESIZE: u32 = 46;
+const AT_L3_CACHEGEOMETRY: u32 = 47;
+
+const AT_MINSIGSTKSZ: u32 = 51; /* Stack needed for signal delivery  */
+
+/* Note section contents.  Each entry in the note section begins with
+   a header of a fixed form.  */
+
+struct Elf32_Nhdr {
+	n_namesz: u32,			/* Length of the note's name.  */
+	n_descsz: u32,			/* Length of the note's descriptor.  */
+	n_u8: u32,			/* Type of the note.  */
+}
+
+struct Elf64_Nhdr {
+	n_namesz: u32,			/* Length of the note's name.  */
+	n_descsz: u32,			/* Length of the note's descriptor.  */
+	n_u8: u32,			/* Type of the note.  */
+}
+
+/* Known names of notes.  */
+
+/* Solaris entries in the note section have this name.  */
+const ELF_NOTE_SOLARIS: &'static str = "SUNW Solaris";
+
+/* Note entries for GNU systems have this name.  */
+const ELF_NOTE_GNU: &'static str = "GNU";
+
+/* Note entries for freedesktop.org have this name.  */
+const ELF_NOTE_FDO: &'static str = "FDO";
+
+/* Defined u8s of notes for Solaris.  */
+
+/* Value of descriptor (one word) is desired pagesize for the binary.  */
+const ELF_NOTE_PAGESIZE_HINT: u32 = 1;
+
+
+/* Defined note u8s for GNU systems.  */
+
+/* ABI information.  The descriptor consists of words:
+   word 0: OS descriptor
+   word 1: major version of the ABI
+   word 2: minor version of the ABI
+   word 3: subminor version of the ABI
+*/
+const NT_GNU_ABI_TAG: u32 = 1;
+const ELF_NOTE_ABI: u32 = NT_GNU_ABI_TAG; /* Old name.  */
+
+/* Known OSes.  These values can appear in word 0 of an
+   NT_GNU_ABI_TAG note section entry.  */
+const ELF_NOTE_OS_LINUX: u32 = 0;
+const ELF_NOTE_OS_GNU: u32 = 1;
+const ELF_NOTE_OS_SOLARIS2: u32 = 2;
+const ELF_NOTE_OS_FREEBSD: u32 = 3;
+
+/* Synthetic hwcap information.  The descriptor begins with two words:
+   word 0: number of entries
+   word 1: bitmask of enabled entries
+   Then follow variable-length entries, one byte followed by a
+   '\0'-terminated hwcap name string.  The byte gives the bit
+   number to test if enabled, (1U << bit) & bitmask.  */
+const NT_GNU_HWCAP: u32 = 2;
+
+/* Build ID bits as generated by ld --build-id.
+   The descriptor consists of any nonzero number of bytes.  */
+const NT_GNU_BUILD_ID: u32 = 3;
+
+/* Version note generated by GNU gold containing a version string.  */
+const NT_GNU_GOLD_VERSION: u32 = 4;
+
+/* Program property.  */
+const NT_GNU_PROPERTY_TYPE_0: u32 = 5;
+
+/* Packaging metadata as defined on
+   https://systemd.io/COREDUMP_PACKAGE_METADATA/ */
+const NT_FDO_PACKAGING_METADATA: u32 = 0xe;
+
+/* Note section name of program property.   */
+const NOTE_GNU_PROPERTY_SECTION_NAME: &'static str = ".note.gnu.property";
+
+/* Values used in GNU .note.gnu.property notes (NT_GNU_PROPERTY_TYPE_0).  */
+
+/* Stack size.  */
+const GNU_PROPERTY_STACK_SIZE: u32 = 1;
+/* No copy relocation on protected data symbol.  */
+const GNU_PROPERTY_NO_COPY_ON_PROTECTED: u32 = 2;
+
+/* A 4-byte unsigned integer property: A bit is set if it is set in all
+   relocatable inputs.  */
+const GNU_PROPERTY_UINT32_AND_LO: u32 = 0x0;
+const GNU_PROPERTY_UINT32_AND_HI: u32 = 0xf;
+
+/* A 4-byte unsigned integer property: A bit is set if it is set in any
+   relocatable inputs.  */
+const GNU_PROPERTY_UINT32_OR_LO: u32 = 0x0;
+const GNU_PROPERTY_UINT32_OR_HI: u32 = 0xf;
+
+/* The needed properties by the object file.  */
+const GNU_PROPERTY_1_NEEDED: u32 = GNU_PROPERTY_UINT32_OR_LO;
+
+/* Set if the object file requires canonical function pointers and
+   cannot be used with copy relocation.  */
+const GNU_PROPERTY_1_NEEDED_INDIRECT_EXTERN_ACCESS: u32 = (1 << 0);
+
+/* Processor-specific semantics, lo */
+const GNU_PROPERTY_LOPROC: u32 = 0x0;
+/* Processor-specific semantics, hi */
+const GNU_PROPERTY_HIPROC: u32 = 0xf;
+/* Application-specific semantics, lo */
+const GNU_PROPERTY_LOUSER: u32 = 0x0;
+/* Application-specific semantics, hi */
+const GNU_PROPERTY_HIUSER: u32 = 0xf;
+
+/* AArch64 specific GNU properties.  */
+const GNU_PROPERTY_AARCH64_FEATURE_1_AND: u32 = 0x0;
+
+const GNU_PROPERTY_AARCH64_FEATURE_1_BTI: u32 = (1 << 0);
+const GNU_PROPERTY_AARCH64_FEATURE_1_PAC: u32 = (1 << 1);
+
+/* The x86 instruction sets indicated by the corresponding bits are
+   used in program.  Their support in the hardware is optional.  */
+const GNU_PROPERTY_X86_ISA_1_USED: u32 = 0x2;
+/* The x86 instruction sets indicated by the corresponding bits are
+   used in program and they must be supported by the hardware.   */
+const GNU_PROPERTY_X86_ISA_1_NEEDED: u32 = 0x2;
+/* X86 processor-specific features used in program.  */
+const GNU_PROPERTY_X86_FEATURE_1_AND: u32 = 0x2;
+
+/* GNU_PROPERTY_X86_ISA_1_BASELINE: CMOV, CX8 (cmpxchg8b), FPU (fld),
+   MMX, OSFXSR (fxsave), SCE (syscall), SSE and SSE2.  */
+const GNU_PROPERTY_X86_ISA_1_BASELINE: u32 = (1 << 0);
+/* GNU_PROPERTY_X86_ISA_1_V2: GNU_PROPERTY_X86_ISA_1_BASELINE,
+   CMPXCHG16B (cmpxchg16b), LAHF-SAHF (lahf), POPCNT (popcnt), SSE3,
+   SSSE3, SSE4.1 and SSE4.2.  */
+const GNU_PROPERTY_X86_ISA_1_V2: u32 = (1 << 1);
+/* GNU_PROPERTY_X86_ISA_1_V3: GNU_PROPERTY_X86_ISA_1_V2, AVX, AVX2, BMI1,
+   BMI2, F16C, FMA, LZCNT, MOVBE, XSAVE.  */
+const GNU_PROPERTY_X86_ISA_1_V3: u32 = (1 << 2);
+/* GNU_PROPERTY_X86_ISA_1_V4: GNU_PROPERTY_X86_ISA_1_V3, AVX512F,
+   AVX512BW, AVX512CD, AVX512DQ and AVX512VL.  */
+const GNU_PROPERTY_X86_ISA_1_V4: u32 = (1 << 3);
+
+/* This indicates that all executable sections are compatible with
+   IBT.  */
+const GNU_PROPERTY_X86_FEATURE_1_IBT: u32 = (1 << 0);
+/* This indicates that all executable sections are compatible with
+   SHSTK.  */
+const GNU_PROPERTY_X86_FEATURE_1_SHSTK: u32 = (1 << 1);
+
+/* Move records.  */
+struct Elf32_Move {
+	m_value: u64,		/* Symbol value.  */
+	m_info: u32,		/* Size and index.  */
+	m_poffset: u32,		/* Symbol offset.  */
+	m_repeat: u16,		/* Repeat count.  */
+	m_stride: u16,		/* Stride info.  */
+}
+
+struct Elf64_Move {
+	m_info: u64,		/* Size and index.  */
+	m_poffset: u64,	/* Symbol offset.  */
+	m_repeat: u16,		/* Repeat count.  */
+	m_stride: u16,		/* Stride info.  */
+} 
+
+/* Macro to construct move records.  */
+/*
+const ELF32_M_SYM(info)	((info) >> 8)
+const ELF32_M_SIZE(info)	((u8) (info))
+const ELF32_M_INFO(sym, size)	(((sym) << 8) + (u8) (size))
+
+const ELF64_M_SYM(info)	ELF32_M_SYM (info)
+const ELF64_M_SIZE(info)	ELF32_M_SIZE (info)
+const ELF64_M_INFO(sym, size)	ELF32_M_INFO (sym, size)
+*/
+
+
+/* Motorola 68k specific definitions.  */
+
+/* Values for Elf32_Ehdr.e_flags.  */
+const EF_CPU32: u32 = 0x0;
+
+/* m68k relocs.  */
+
+const R_68K_NONE: u8 = 0;		/* No reloc */
+const R_68K_32: u8 = 1;		/* Direct 32 bit  */
+const R_68K_16: u8 = 2;		/* Direct 16 bit  */
+const R_68K_8: u8 = 3;		/* Direct 8 bit  */
+const R_68K_PC32: u8 = 4;		/* PC relative 32 bit */
+const R_68K_PC16: u8 = 5;		/* PC relative 16 bit */
+const R_68K_PC8: u8 = 6;		/* PC relative 8 bit */
+const R_68K_GOT32: u8 = 7;		/* 32 bit PC relative GOT entry */
+const R_68K_GOT16: u8 = 8;		/* 16 bit PC relative GOT entry */
+const R_68K_GOT8: u8 = 9;		/* 8 bit PC relative GOT entry */
+const R_68K_GOT32O: u8 = 10;		/* 32 bit GOT offset */
+const R_68K_GOT16O: u8 = 11;		/* 16 bit GOT offset */
+const R_68K_GOT8O: u8 = 12;		/* 8 bit GOT offset */
+const R_68K_PLT32: u8 = 13;		/* 32 bit PC relative PLT address */
+const R_68K_PLT16: u8 = 14;		/* 16 bit PC relative PLT address */
+const R_68K_PLT8: u8 = 15;		/* 8 bit PC relative PLT address */
+const R_68K_PLT32O: u8 = 16;		/* 32 bit PLT offset */
+const R_68K_PLT16O: u8 = 17;		/* 16 bit PLT offset */
+const R_68K_PLT8O: u8 = 18;		/* 8 bit PLT offset */
+const R_68K_COPY: u8 = 19;		/* Copy symbol at runtime */
+const R_68K_GLOB_DAT: u8 = 20;		/* Create GOT entry */
+const R_68K_JMP_SLOT: u8 = 21;		/* Create PLT entry */
+const R_68K_RELATIVE: u8 = 22;		/* Adjust by program base */
+const R_68K_TLS_GD32: u8 = 25;          /* 32 bit GOT offset for GD */
+const R_68K_TLS_GD16: u8 = 26;          /* 16 bit GOT offset for GD */
+const R_68K_TLS_GD8: u8 = 27;          /* 8 bit GOT offset for GD */
+const R_68K_TLS_LDM32: u8 = 28;          /* 32 bit GOT offset for LDM */
+const R_68K_TLS_LDM16: u8 = 29;          /* 16 bit GOT offset for LDM */
+const R_68K_TLS_LDM8: u8 = 30;          /* 8 bit GOT offset for LDM */
+const R_68K_TLS_LDO32: u8 = 31;          /* 32 bit module-relative offset */
+const R_68K_TLS_LDO16: u8 = 32;          /* 16 bit module-relative offset */
+const R_68K_TLS_LDO8: u8 = 33;          /* 8 bit module-relative offset */
+const R_68K_TLS_IE32: u8 = 34;          /* 32 bit GOT offset for IE */
+const R_68K_TLS_IE16: u8 = 35;          /* 16 bit GOT offset for IE */
+const R_68K_TLS_IE8: u8 = 36;          /* 8 bit GOT offset for IE */
+const R_68K_TLS_LE32: u8 = 37;          /* 32 bit offset relative to
+					   static TLS block */
+const R_68K_TLS_LE16: u8 = 38;          /* 16 bit offset relative to
+					   static TLS block */
+const R_68K_TLS_LE8: u8 = 39;          /* 8 bit offset relative to
+					   static TLS block */
+const R_68K_TLS_DTPMOD32: u8 = 40;          /* 32 bit module number */
+const R_68K_TLS_DTPREL32: u8 = 41;          /* 32 bit module-relative offset */
+const R_68K_TLS_TPREL32: u8 = 42;          /* 32 bit TP-relative offset */
+/* Keep this the last entry.  */
+const R_68K_NUM: u8 = 43;
+
+/* Intel 80386 specific definitions.  */
+
+/* i386 relocs.  */
+
+const R_386_NONE: u8 = 0;		/* No reloc */
+const R_386_32: u8 = 1;		/* Direct 32 bit  */
+const R_386_PC32: u8 = 2;		/* PC relative 32 bit */
+const R_386_GOT32: u8 = 3;		/* 32 bit GOT entry */
+const R_386_PLT32: u8 = 4;		/* 32 bit PLT address */
+const R_386_COPY: u8 = 5;		/* Copy symbol at runtime */
+const R_386_GLOB_DAT: u8 = 6;		/* Create GOT entry */
+const R_386_JMP_SLOT: u8 = 7;		/* Create PLT entry */
+const R_386_RELATIVE: u8 = 8;		/* Adjust by program base */
+const R_386_GOTOFF: u8 = 9;		/* 32 bit offset to GOT */
+const R_386_GOTPC: u8 = 10;		/* 32 bit PC relative offset to GOT */
+const R_386_32PLT: u8 = 11;
+const R_386_TLS_TPOFF: u8 = 14;		/* Offset in static TLS block */
+const R_386_TLS_IE: u8 = 15;		/* Address of GOT entry for static TLS
+					   block offset */
+const R_386_TLS_GOTIE: u8 = 16;		/* GOT entry for static TLS block
+					   offset */
+const R_386_TLS_LE: u8 = 17;		/* Offset relative to static TLS
+					   block */
+const R_386_TLS_GD: u8 = 18;		/* Direct 32 bit for GNU version of
+					   general dynamic thread local data */
+const R_386_TLS_LDM: u8 = 19;		/* Direct 32 bit for GNU version of
+					   local dynamic thread local data
+					   in LE code */
+const R_386_16: u8 = 20;
+const R_386_PC16: u8 = 21;
+const R_386_8: u8 = 22;
+const R_386_PC8: u8 = 23;
+const R_386_TLS_GD_32: u8 = 24;		/* Direct 32 bit for general dynamic
+					   thread local data */
+const R_386_TLS_GD_PUSH: u8 = 25;		/* Tag for pushl in GD TLS code */
+const R_386_TLS_GD_CALL: u8 = 26;		/* Relocation for call to
+					   __tls_get_addr() */
+const R_386_TLS_GD_POP: u8 = 27;		/* Tag for popl in GD TLS code */
+const R_386_TLS_LDM_32: u8 = 28;		/* Direct 32 bit for local dynamic
+					   thread local data in LE code */
+const R_386_TLS_LDM_PUSH: u8 = 29;		/* Tag for pushl in LDM TLS code */
+const R_386_TLS_LDM_CALL: u8 = 30;		/* Relocation for call to
+					   __tls_get_addr() in LDM code */
+const R_386_TLS_LDM_POP: u8 = 31;		/* Tag for popl in LDM TLS code */
+const R_386_TLS_LDO_32: u8 = 32;		/* Offset relative to TLS block */
+const R_386_TLS_IE_32: u8 = 33;		/* GOT entry for negated static TLS
+					   block offset */
+const R_386_TLS_LE_32: u8 = 34;		/* Negated offset relative to static
+					   TLS block */
+const R_386_TLS_DTPMOD32: u8 = 35;		/* ID of module containing symbol */
+const R_386_TLS_DTPOFF32: u8 = 36;		/* Offset in TLS block */
+const R_386_TLS_TPOFF32: u8 = 37;		/* Negated offset in static TLS block */
+const R_386_SIZE32: u8 = 38; 		/* 32-bit symbol size */
+const R_386_TLS_GOTDESC: u8 = 39;		/* GOT offset for TLS descriptor.  */
+const R_386_TLS_DESC_CALL: u8 = 40;		/* Marker of call through TLS
+					   descriptor for
+					   relaxation.  */
+const R_386_TLS_DESC: u8 = 41;		/* TLS descriptor containing
+					   pointer to code and to
+					   argument, returning the TLS
+					   offset for the symbol.  */
+const R_386_IRELATIVE: u8 = 42;		/* Adjust indirectly by program base */
+const R_386_GOT32X: u8 = 43;		/* Load from 32 bit GOT entry,
+					   relaxable. */
+/* Keep this the last entry.  */
+const R_386_NUM: u8 = 44;
+
+/* SUN SPARC specific definitions.  */
+
+/* Legal values for ST_TYPE subfield of st_info (symbol u8).  */
+
+const STT_SPARC_REGISTER: u8 = 13;	/* Global register reserved to app. */
+
+/* Values for Elf64_Ehdr.e_flags.  */
+
+const EF_SPARCV9_MM: u8 = 3;
+const EF_SPARCV9_TSO: u8 = 0;
+const EF_SPARCV9_PSO: u8 = 1;
+const EF_SPARCV9_RMO: u8 = 2;
+const EF_SPARC_LEDATA: u8 = 0x0; /* little endian data */
+const EF_SPARC_EXT_MASK: u8 = 0x0;
+const EF_SPARC_32PLUS: u8 = 0x0; /* generic V8+ features */
+const EF_SPARC_SUN_US1: u8 = 0x0; /* Sun UltraSPARC1 extensions */
+const EF_SPARC_HAL_R1: u8 = 0x0; /* HAL R1 extensions */
+const EF_SPARC_SUN_US3: u8 = 0x0; /* Sun UltraSPARCIII extensions */
+
+/* SPARC relocs.  */
+
+const R_SPARC_NONE: u8 = 0;	/* No reloc */
+const R_SPARC_8: u8 = 1;	/* Direct 8 bit */
+const R_SPARC_16: u8 = 2;	/* Direct 16 bit */
+const R_SPARC_32: u8 = 3;	/* Direct 32 bit */
+const R_SPARC_DISP8: u8 = 4;	/* PC relative 8 bit */
+const R_SPARC_DISP16: u8 = 5;	/* PC relative 16 bit */
+const R_SPARC_DISP32: u8 = 6;	/* PC relative 32 bit */
+const R_SPARC_WDISP30: u8 = 7;	/* PC relative 30 bit shifted */
+const R_SPARC_WDISP22: u8 = 8;	/* PC relative 22 bit shifted */
+const R_SPARC_HI22: u8 = 9;	/* High 22 bit */
+const R_SPARC_22: u8 = 10;	/* Direct 22 bit */
+const R_SPARC_13: u8 = 11;	/* Direct 13 bit */
+const R_SPARC_LO10: u8 = 12;	/* Truncated 10 bit */
+const R_SPARC_GOT10: u8 = 13;	/* Truncated 10 bit GOT entry */
+const R_SPARC_GOT13: u8 = 14;	/* 13 bit GOT entry */
+const R_SPARC_GOT22: u8 = 15;	/* 22 bit GOT entry shifted */
+const R_SPARC_PC10: u8 = 16;	/* PC relative 10 bit truncated */
+const R_SPARC_PC22: u8 = 17;	/* PC relative 22 bit shifted */
+const R_SPARC_WPLT30: u8 = 18;	/* 30 bit PC relative PLT address */
+const R_SPARC_COPY: u8 = 19;	/* Copy symbol at runtime */
+const R_SPARC_GLOB_DAT: u8 = 20;	/* Create GOT entry */
+const R_SPARC_JMP_SLOT: u8 = 21;	/* Create PLT entry */
+const R_SPARC_RELATIVE: u8 = 22;	/* Adjust by program base */
+const R_SPARC_UA32: u8 = 23;	/* Direct 32 bit unaligned */
+
+/* Additional Sparc64 relocs.  */
+
+const R_SPARC_PLT32: u8 = 24;	/* Direct 32 bit ref to PLT entry */
+const R_SPARC_HIPLT22: u8 = 25;	/* High 22 bit PLT entry */
+const R_SPARC_LOPLT10: u8 = 26;	/* Truncated 10 bit PLT entry */
+const R_SPARC_PCPLT32: u8 = 27;	/* PC rel 32 bit ref to PLT entry */
+const R_SPARC_PCPLT22: u8 = 28;	/* PC rel high 22 bit PLT entry */
+const R_SPARC_PCPLT10: u8 = 29;	/* PC rel trunc 10 bit PLT entry */
+const R_SPARC_10: u8 = 30;	/* Direct 10 bit */
+const R_SPARC_11: u8 = 31;	/* Direct 11 bit */
+const R_SPARC_64: u8 = 32;	/* Direct 64 bit */
+const R_SPARC_OLO10: u8 = 33;	/* 10bit with secondary 13bit addend */
+const R_SPARC_HH22: u8 = 34;	/* Top 22 bits of direct 64 bit */
+const R_SPARC_HM10: u8 = 35;	/* High middle 10 bits of ... */
+const R_SPARC_LM22: u8 = 36;	/* Low middle 22 bits of ... */
+const R_SPARC_PC_HH22: u8 = 37;	/* Top 22 bits of pc rel 64 bit */
+const R_SPARC_PC_HM10: u8 = 38;	/* High middle 10 bit of ... */
+const R_SPARC_PC_LM22: u8 = 39;	/* Low miggle 22 bits of ... */
+const R_SPARC_WDISP16: u8 = 40;	/* PC relative 16 bit shifted */
+const R_SPARC_WDISP19: u8 = 41;	/* PC relative 19 bit shifted */
+const R_SPARC_GLOB_JMP: u8 = 42;	/* was part of v9 ABI but was removed */
+const R_SPARC_7: u8 = 43;	/* Direct 7 bit */
+const R_SPARC_5: u8 = 44;	/* Direct 5 bit */
+const R_SPARC_6: u8 = 45;	/* Direct 6 bit */
+const R_SPARC_DISP64: u8 = 46;	/* PC relative 64 bit */
+const R_SPARC_PLT64: u8 = 47;	/* Direct 64 bit ref to PLT entry */
+const R_SPARC_HIX22: u8 = 48;	/* High 22 bit complemented */
+const R_SPARC_LOX10: u8 = 49;	/* Truncated 11 bit complemented */
+const R_SPARC_H44: u8 = 50;	/* Direct high 12 of 44 bit */
+const R_SPARC_M44: u8 = 51;	/* Direct mid 22 of 44 bit */
+const R_SPARC_L44: u8 = 52;	/* Direct low 10 of 44 bit */
+const R_SPARC_REGISTER: u8 = 53;	/* Global register usage */
+const R_SPARC_UA64: u8 = 54;	/* Direct 64 bit unaligned */
+const R_SPARC_UA16: u8 = 55;	/* Direct 16 bit unaligned */
+const R_SPARC_TLS_GD_HI22: u8 = 56;
+const R_SPARC_TLS_GD_LO10: u8 = 57;
+const R_SPARC_TLS_GD_ADD: u8 = 58;
+const R_SPARC_TLS_GD_CALL: u8 = 59;
+const R_SPARC_TLS_LDM_HI22: u8 = 60;
+const R_SPARC_TLS_LDM_LO10: u8 = 61;
+const R_SPARC_TLS_LDM_ADD: u8 = 62;
+const R_SPARC_TLS_LDM_CALL: u8 = 63;
+const R_SPARC_TLS_LDO_HIX22: u8 = 64;
+const R_SPARC_TLS_LDO_LOX10: u8 = 65;
+const R_SPARC_TLS_LDO_ADD: u8 = 66;
+const R_SPARC_TLS_IE_HI22: u8 = 67;
+const R_SPARC_TLS_IE_LO10: u8 = 68;
+const R_SPARC_TLS_IE_LD: u8 = 69;
+const R_SPARC_TLS_IE_LDX: u8 = 70;
+const R_SPARC_TLS_IE_ADD: u8 = 71;
+const R_SPARC_TLS_LE_HIX22: u8 = 72;
+const R_SPARC_TLS_LE_LOX10: u8 = 73;
+const R_SPARC_TLS_DTPMOD32: u8 = 74;
+const R_SPARC_TLS_DTPMOD64: u8 = 75;
+const R_SPARC_TLS_DTPOFF32: u8 = 76;
+const R_SPARC_TLS_DTPOFF64: u8 = 77;
+const R_SPARC_TLS_TPOFF32: u8 = 78;
+const R_SPARC_TLS_TPOFF64: u8 = 79;
+const R_SPARC_GOTDATA_HIX22: u8 = 80;
+const R_SPARC_GOTDATA_LOX10: u8 = 81;
+const R_SPARC_GOTDATA_OP_HIX22: u8 = 82;
+const R_SPARC_GOTDATA_OP_LOX10: u8 = 83;
+const R_SPARC_GOTDATA_OP: u8 = 84;
+const R_SPARC_H34: u8 = 85;
+const R_SPARC_SIZE32: u8 = 86;
+const R_SPARC_SIZE64: u8 = 87;
+const R_SPARC_WDISP10: u8 = 88;
+const R_SPARC_JMP_IREL: u8 = 248;
+const R_SPARC_IRELATIVE: u8 = 249;
+const R_SPARC_GNU_VTINHERIT: u8 = 250;
+const R_SPARC_GNU_VTENTRY: u8 = 251;
+const R_SPARC_REV32: u8 = 252;
+/* Keep this the last entry.  */
+const R_SPARC_NUM: u8 = 253;
+
+/* For Sparc64, legal values for d_tag of Elf64_Dyn.  */
+
+const DT_SPARC_REGISTER: u8 = 0x1;
+const DT_SPARC_NUM: u8 = 2;
+
+/* MIPS R3000 specific definitions.  */
+
+/* Legal values for e_flags field of Elf32_Ehdr.  */
+
+const EF_MIPS_NOREORDER: u8 = 1;     /* A .noreorder directive was used.  */
+const EF_MIPS_PIC: u8 = 2;     /* Contains PIC code.  */
+const EF_MIPS_CPIC: u8 = 4;     /* Uses PIC calling sequence.  */
+const EF_MIPS_XGOT: u8 = 8;
+const EF_MIPS_64BIT_WHIRL: u8 = 16;
+const EF_MIPS_ABI2: u8 = 32;
+const EF_MIPS_ABI_ON32: u8 = 64;
+const EF_MIPS_FP64: u8 = 512;  /* Uses FP64 (12 callee-saved).  */
+const EF_MIPS_NAN2008: u8 = 1024;  /* Uses IEEE 754-2008 NaN encoding.  */
+const EF_MIPS_ARCH: u8 = 0x0; /* MIPS architecture level.  */
+
+/* Legal values for MIPS architecture level.  */
+
+const EF_MIPS_ARCH_1: u8 = 0x0; /* -mips1 code.  */
+const EF_MIPS_ARCH_2: u8 = 0x0; /* -mips2 code.  */
+const EF_MIPS_ARCH_3: u8 = 0x0; /* -mips3 code.  */
+const EF_MIPS_ARCH_4: u8 = 0x0; /* -mips4 code.  */
+const EF_MIPS_ARCH_5: u8 = 0x0; /* -mips5 code.  */
+const EF_MIPS_ARCH_32: u8 = 0x0; /* MIPS32 code.  */
+const EF_MIPS_ARCH_64: u8 = 0x0; /* MIPS64 code.  */
+const EF_MIPS_ARCH_32R2: u8 = 0x0; /* MIPS32r2 code.  */
+const EF_MIPS_ARCH_64R2: u8 = 0x0; /* MIPS64r2 code.  */
+
+/* The following are unofficial names and should not be used.  */
+
+const E_MIPS_ARCH_1: u8 = EF_MIPS_ARCH_1;
+const E_MIPS_ARCH_2: u8 = EF_MIPS_ARCH_2;
+const E_MIPS_ARCH_3: u8 = EF_MIPS_ARCH_3;
+const E_MIPS_ARCH_4: u8 = EF_MIPS_ARCH_4;
+const E_MIPS_ARCH_5: u8 = EF_MIPS_ARCH_5;
+const E_MIPS_ARCH_32: u8 = EF_MIPS_ARCH_32;
+const E_MIPS_ARCH_64: u8 = EF_MIPS_ARCH_64;
+
+/* Special section indices.  */
+
+const SHN_MIPS_ACOMMON: u8 = 0x0;	/* Allocated common symbols.  */
+const SHN_MIPS_TEXT: u8 = 0x1;	/* Allocated test symbols.  */
+const SHN_MIPS_DATA: u8 = 0x2;	/* Allocated data symbols.  */
+const SHN_MIPS_SCOMMON: u8 = 0x3;	/* Small common symbols.  */
+const SHN_MIPS_SUNDEFINED: u8 = 0x4;	/* Small undefined symbols.  */
+
+/* Legal values for sh_u8 field of Elf32_Shdr.  */
+
+const SHT_MIPS_LIBLIST: u8 = 0x0; /* Shared objects used in link.  */
+const SHT_MIPS_MSYM: u8 = 0x1;
+const SHT_MIPS_CONFLICT: u8 = 0x2; /* Conflicting symbols.  */
+const SHT_MIPS_GPTAB: u8 = 0x3; /* Global data area sizes.  */
+const SHT_MIPS_UCODE: u8 = 0x4; /* Reserved for SGI/MIPS compilers */
+const SHT_MIPS_DEBUG: u8 = 0x5; /* MIPS ECOFF debugging info.  */
+const SHT_MIPS_REGINFO: u8 = 0x6; /* Register usage information.  */
+const SHT_MIPS_PACKAGE: u8 = 0x7;
+const SHT_MIPS_PACKSYM: u8 = 0x8;
+const SHT_MIPS_RELD: u8 = 0x9;
+const SHT_MIPS_IFACE: u8 = 0xb;
+const SHT_MIPS_CONTENT: u8 = 0xc;
+const SHT_MIPS_OPTIONS: u8 = 0xd; /* Miscellaneous options.  */
+const SHT_MIPS_SHDR: u8 = 0x0;
+const SHT_MIPS_FDESC: u8 = 0x1;
+const SHT_MIPS_EXTSYM: u8 = 0x2;
+const SHT_MIPS_DENSE: u8 = 0x3;
+const SHT_MIPS_PDESC: u8 = 0x4;
+const SHT_MIPS_LOCSYM: u8 = 0x5;
+const SHT_MIPS_AUXSYM: u8 = 0x6;
+const SHT_MIPS_OPTSYM: u8 = 0x7;
+const SHT_MIPS_LOCSTR: u8 = 0x8;
+const SHT_MIPS_LINE: u8 = 0x9;
+const SHT_MIPS_RFDESC: u8 = 0xa;
+const SHT_MIPS_DELTASYM: u8 = 0xb;
+const SHT_MIPS_DELTAINST: u8 = 0xc;
+const SHT_MIPS_DELTACLASS: u8 = 0xd;
+const SHT_MIPS_DWARF: u8 = 0xe; /* DWARF debugging information.  */
+const SHT_MIPS_DELTADECL: u8 = 0xf;
+const SHT_MIPS_SYMBOL_LIB: u8 = 0x0;
+const SHT_MIPS_EVENTS: u8 = 0x1; /* Event section.  */
+const SHT_MIPS_TRANSLATE: u8 = 0x2;
+const SHT_MIPS_PIXIE: u8 = 0x3;
+const SHT_MIPS_XLATE: u8 = 0x4;
+const SHT_MIPS_XLATE_DEBUG: u8 = 0x5;
+const SHT_MIPS_WHIRL: u8 = 0x6;
+const SHT_MIPS_EH_REGION: u8 = 0x7;
+const SHT_MIPS_XLATE_OLD: u8 = 0x8;
+const SHT_MIPS_PDR_EXCEPTION: u8 = 0x9;
+const SHT_MIPS_XHASH: u8 = 0xb;
+
+/* Legal values for sh_flags field of Elf32_Shdr.  */
+
+const SHF_MIPS_GPREL: u8 = 0x0; /* Must be in global data area.  */
+const SHF_MIPS_MERGE: u8 = 0x0;
+const SHF_MIPS_ADDR: u8 = 0x0;
+const SHF_MIPS_STRINGS: u8 = 0x0;
+const SHF_MIPS_NOSTRIP: u8 = 0x0;
+const SHF_MIPS_LOCAL: u8 = 0x0;
+const SHF_MIPS_NAMES: u8 = 0x0;
+const SHF_MIPS_NODUPE: u8 = 0x0;
+
+
+/* Symbol tables.  */
+
+/* MIPS specific values for `st_other'.  */
+const STO_MIPS_DEFAULT: u8 = 0x0;
+const STO_MIPS_INTERNAL: u8 = 0x1;
+const STO_MIPS_HIDDEN: u8 = 0x2;
+const STO_MIPS_PROTECTED: u8 = 0x3;
+const STO_MIPS_PLT: u8 = 0x8;
+const STO_MIPS_SC_ALIGN_UNUSED: u8 = 0xf;
+
+/* MIPS specific values for `st_info'.  */
+const STB_MIPS_SPLIT_COMMON: u8 = 13;
+
+/* Entries found in sections of u8 SHT_MIPS_GPTAB.  */
+
+enum Elf32_gptab {
+    gt_header(),
+    gt_entry(),
+    /*
+  struct
+    {
+	gt_current_g_value: u32,	/* -G value used for compilation.  */
+	gt_unused: u32,		/* Not used.  */
+    } gt_header;			/* First entry in section.  */
+  struct
+    {
+	gt_g_value: u32,		/* If this value were used for -G.  */
+	gt_bytes: u32,		/* This many bytes would be used.  */
+    } gt_entry;				/* Subsequent entries in section.  */
+  */
+}
+
+/* Entry found in sections of u8 SHT_MIPS_REGINFO.  */
+
+struct Elf32_RegInfo {
+	ri_gprmask: u32,		/* General registers used.  */
+    ri_cprmask: [u32, 4],		/* Coprocessor registers used.  */
+    ri_gp_value: i32,		/* $gp register value.  */
+}
+
+/* Entries found in sections of u8 SHT_MIPS_OPTIONS.  */
+
+struct Elf_Options {
+	kind: u8,		/* Determines interpretation of the
+				   variable part of descriptor.  */
+	size: u8,		/* Size of descriptor, including header.  */
+	section: u16,	/* Section header index of section affected,
+				   0 for global options.  */
+	info: u32,		/* Kind-specific information.  */
+} 
+
+/* Values for `kind' field in Elf_Options.  */
+
+const ODK_NULL: u8 = 0;	/* Undefined.  */
+const ODK_REGINFO: u8 = 1;	/* Register usage information.  */
+const ODK_EXCEPTIONS: u8 = 2;	/* Exception processing options.  */
+const ODK_PAD: u8 = 3;	/* Section padding options.  */
+const ODK_HWPATCH: u8 = 4;	/* Hardware workarounds performed */
+const ODK_FILL: u8 = 5;	/* record the fill value used by the linker. */
+const ODK_TAGS: u8 = 6;	/* reserve space for desktop tools to write. */
+const ODK_HWAND: u8 = 7;	/* HW workarounds.  'AND' bits when merging. */
+const ODK_HWOR: u8 = 8;	/* HW workarounds.  'OR' bits when merging.  */
+
+/* Values for `info' in Elf_Options for ODK_EXCEPTIONS entries.  */
+
+const OEX_FPU_MIN: u32 = 0xf;	/* FPE's which MUST be enabled.  */
+const OEX_FPU_MAX: u32 = 0x0;	/* FPE's which MAY be enabled.  */
+const OEX_PAGE0: u32 = 0x0;	/* page zero must be mapped.  */
+const OEX_SMM: u32 = 0x0;	/* Force sequential memory mode?  */
+const OEX_FPDBUG: u32 = 0x0;	/* Force floating point debug mode?  */
+const OEX_PRECISEFP: u32 = OEX_FPDBUG;
+const OEX_DISMISS: u32 = 0x0;	/* Dismiss invalid address faults?  */
+
+const OEX_FPU_INVAL: u32 = 0x0;
+const OEX_FPU_DIV0: u32 = 0x8;
+const OEX_FPU_OFLO: u32 = 0x4;
+const OEX_FPU_UFLO: u32 = 0x2;
+const OEX_FPU_INEX: u32 = 0x1;
+
+/* Masks for `info' in Elf_Options for an ODK_HWPATCH entry.  */
+
+const OHW_R4KEOP: u32 = 0x1;	/* R4000 end-of-page patch.  */
+const OHW_R8KPFETCH: u32 = 0x2;	/* may need R8000 prefetch patch.  */
+const OHW_R5KEOP: u32 = 0x4;	/* R5000 end-of-page patch.  */
+const OHW_R5KCVTL: u32 = 0x8;	/* R5000 cvt.[ds].l bug.  clean=1.  */
+
+const OPAD_PREFIX: u32 = 0x1;
+const OPAD_POSTFIX: u32 = 0x2;
+const OPAD_SYMBOL: u32 = 0x4;
+
+/* Entry found in `.options' section.  */
+
+struct Elf_Options_Hw {
+	hwp_flags1: u32,	/* Extra flags.  */
+	hwp_flags2: u32,	/* Extra flags.  */
+}
+
+/* Masks for `info' in ElfOptions for ODK_HWAND and ODK_HWOR entries.  */
+
+const OHWA0_R4KEOP_CHECKED: u32 = 0x1;
+const OHWA1_R4KEOP_CLEAN: u32 = 0x2;
+
+/* MIPS relocs.  */
+
+const R_MIPS_NONE: u8 = 0;	/* No reloc */
+const R_MIPS_16: u8 = 1;	/* Direct 16 bit */
+const R_MIPS_32: u8 = 2;	/* Direct 32 bit */
+const R_MIPS_REL32: u8 = 3;	/* PC relative 32 bit */
+const R_MIPS_26: u8 = 4;	/* Direct 26 bit shifted */
+const R_MIPS_HI16: u8 = 5;	/* High 16 bit */
+const R_MIPS_LO16: u8 = 6;	/* Low 16 bit */
+const R_MIPS_GPREL16: u8 = 7;	/* GP relative 16 bit */
+const R_MIPS_LITERAL: u8 = 8;	/* 16 bit literal entry */
+const R_MIPS_GOT16: u8 = 9;	/* 16 bit GOT entry */
+const R_MIPS_PC16: u8 = 10;	/* PC relative 16 bit */
+const R_MIPS_CALL16: u8 = 11;	/* 16 bit GOT entry for function */
+const R_MIPS_GPREL32: u8 = 12;	/* GP relative 32 bit */
+
+const R_MIPS_SHIFT5: u8 = 16;
+const R_MIPS_SHIFT6: u8 = 17;
+const R_MIPS_64: u8 = 18;
+const R_MIPS_GOT_DISP: u8 = 19;
+const R_MIPS_GOT_PAGE: u8 = 20;
+const R_MIPS_GOT_OFST: u8 = 21;
+const R_MIPS_GOT_HI16: u8 = 22;
+const R_MIPS_GOT_LO16: u8 = 23;
+const R_MIPS_SUB: u8 = 24;
+const R_MIPS_INSERT_A: u8 = 25;
+const R_MIPS_INSERT_B: u8 = 26;
+const R_MIPS_DELETE: u8 = 27;
+const R_MIPS_HIGHER: u8 = 28;
+const R_MIPS_HIGHEST: u8 = 29;
+const R_MIPS_CALL_HI16: u8 = 30;
+const R_MIPS_CALL_LO16: u8 = 31;
+const R_MIPS_SCN_DISP: u8 = 32;
+const R_MIPS_REL16: u8 = 33;
+const R_MIPS_ADD_IMMEDIATE: u8 = 34;
+const R_MIPS_PJUMP: u8 = 35;
+const R_MIPS_RELGOT: u8 = 36;
+const R_MIPS_JALR: u8 = 37;
+const R_MIPS_TLS_DTPMOD32: u8 = 38;	/* Module number 32 bit */
+const R_MIPS_TLS_DTPREL32: u8 = 39;	/* Module-relative offset 32 bit */
+const R_MIPS_TLS_DTPMOD64: u8 = 40;	/* Module number 64 bit */
+const R_MIPS_TLS_DTPREL64: u8 = 41;	/* Module-relative offset 64 bit */
+const R_MIPS_TLS_GD: u8 = 42;	/* 16 bit GOT offset for GD */
+const R_MIPS_TLS_LDM: u8 = 43;	/* 16 bit GOT offset for LDM */
+const R_MIPS_TLS_DTPREL_HI16: u8 = 44;	/* Module-relative offset, high 16 bits */
+const R_MIPS_TLS_DTPREL_LO16: u8 = 45;	/* Module-relative offset, low 16 bits */
+const R_MIPS_TLS_GOTTPREL: u8 = 46;	/* 16 bit GOT offset for IE */
+const R_MIPS_TLS_TPREL32: u8 = 47;	/* TP-relative offset, 32 bit */
+const R_MIPS_TLS_TPREL64: u8 = 48;	/* TP-relative offset, 64 bit */
+const R_MIPS_TLS_TPREL_HI16: u8 = 49;	/* TP-relative offset, high 16 bits */
+const R_MIPS_TLS_TPREL_LO16: u8 = 50;	/* TP-relative offset, low 16 bits */
+const R_MIPS_GLOB_DAT: u8 = 51;
+const R_MIPS_COPY: u8 = 126;
+const R_MIPS_JUMP_SLOT: u8 = 127;
+/* Keep this the last entry.  */
+const R_MIPS_NUM: u8 = 128;
+
+/* Legal values for p_u8 field of Elf32_Phdr.  */
+
+const PT_MIPS_REGINFO: u32 = 0x0;	/* Register usage information. */
+const PT_MIPS_RTPROC: u32 = 0x1;	/* Runtime procedure table. */
+const PT_MIPS_OPTIONS: u32 = 0x2;
+const PT_MIPS_ABIFLAGS: u32 = 0x3;	/* FP mode requirement. */
+
+/* Special program header u32s.  */
+
+const PF_MIPS_LOCAL: u32 = 0x0;
+
+/* Legal values for d_tag field of Elf32_Dyn.  */
+
+const DT_MIPS_RLD_VERSION: u32 = 0x1;	/* Runtime linker interface version */
+const DT_MIPS_TIME_STAMP: u32 = 0x2;	/* Timestamp */
+const DT_MIPS_ICHECKSUM: u32 = 0x3;	/* Checksum */
+const DT_MIPS_IVERSION: u32 = 0x4;	/* Version string (string tbl index) */
+const DT_MIPS_FLAGS: u32 = 0x5;	/* Flags */
+const DT_MIPS_BASE_ADDRESS: u32 = 0x6;	/* Base address */
+const DT_MIPS_MSYM: u32 = 0x7;
+const DT_MIPS_CONFLICT: u32 = 0x8;	/* Address of CONFLICT section */
+const DT_MIPS_LIBLIST: u32 = 0x9;	/* Address of LIBLIST section */
+const DT_MIPS_LOCAL_GOTNO: u32 = 0xa;	/* Number of local GOT entries */
+const DT_MIPS_CONFLICTNO: u32 = 0xb;	/* Number of CONFLICT entries */
+const DT_MIPS_LIBLISTNO: u32 = 0x0;	/* Number of LIBLIST entries */
+const DT_MIPS_SYMTABNO: u32 = 0x1;	/* Number of DYNSYM entries */
+const DT_MIPS_UNREFEXTNO: u32 = 0x2;	/* First external DYNSYM */
+const DT_MIPS_GOTSYM: u32 = 0x3;	/* First GOT entry in DYNSYM */
+const DT_MIPS_HIPAGENO: u32 = 0x4;	/* Number of GOT page table entries */
+const DT_MIPS_RLD_MAP: u32 = 0x6;	/* Address of run time loader map.  */
+const DT_MIPS_DELTA_CLASS: u32 = 0x7;	/* Delta C++ class definition.  */
+const DT_MIPS_DELTA_CLASS_NO: u32 = 0x8; /* Number of entries in
+						DT_MIPS_DELTA_CLASS.  */
+const DT_MIPS_DELTA_INSTANCE: u32 = 0x9; /* Delta C++ class instances.  */
+const DT_MIPS_DELTA_INSTANCE_NO: u32 = 0xa; /* Number of entries in
+						DT_MIPS_DELTA_INSTANCE.  */
+const DT_MIPS_DELTA_RELOC: u32 = 0xb; /* Delta relocations.  */
+const DT_MIPS_DELTA_RELOC_NO: u32 = 0xc; /* Number of entries in
+					     DT_MIPS_DELTA_RELOC.  */
+const DT_MIPS_DELTA_SYM: u32 = 0xd; /* Delta symbols that Delta
+					   relocations refer to.  */
+const DT_MIPS_DELTA_SYM_NO: u32 = 0xe; /* Number of entries in
+					   DT_MIPS_DELTA_SYM.  */
+const DT_MIPS_DELTA_CLASSSYM: u32 = 0x0; /* Delta symbols that hold the
+					     class declaration.  */
+const DT_MIPS_DELTA_CLASSSYM_NO: u32 = 0x1; /* Number of entries in
+						DT_MIPS_DELTA_CLASSSYM.  */
+const DT_MIPS_CXX_FLAGS: u32 = 0x2; /* Flags indicating for C++ flavor.  */
+const DT_MIPS_PIXIE_INIT: u32 = 0x3;
+const DT_MIPS_SYMBOL_LIB: u32 = 0x4;
+const DT_MIPS_LOCALPAGE_GOTIDX: u32 = 0x5;
+const DT_MIPS_LOCAL_GOTIDX: u32 = 0x6;
+const DT_MIPS_HIDDEN_GOTIDX: u32 = 0x7;
+const DT_MIPS_PROTECTED_GOTIDX: u32 = 0x8;
+const DT_MIPS_OPTIONS: u32 = 0x9; /* Address of .options.  */
+const DT_MIPS_INTERFACE: u32 = 0xa; /* Address of .interface.  */
+const DT_MIPS_DYNSTR_ALIGN: u32 = 0xb;
+const DT_MIPS_INTERFACE_SIZE: u32 = 0xc; /* Size of the .interface section. */
+const DT_MIPS_RLD_TEXT_RESOLVE_ADDR: u32 = 0xd; /* Address of rld_text_rsolve
+						    function stored in GOT.  */
+const DT_MIPS_PERF_SUFFIX: u32 = 0xe; /* Default suffix of dso to be added
+					   by rld on dlopen() calls.  */
+const DT_MIPS_COMPACT_SIZE: u32 = 0xf; /* (O32)Size of compact rel section. */
+const DT_MIPS_GP_VALUE: u32 = 0x0; /* GP value for aux GOTs.  */
+const DT_MIPS_AUX_DYNAMIC: u32 = 0x1; /* Address of aux .dynamic.  */
+/* The address of .got.plt in an executable using the new non-PIC ABI.  */
+const DT_MIPS_PLTGOT: u32 = 0x2;
+/* The base of the PLT in an executable using the new non-PIC ABI if that
+   PLT is writable.  For a non-writable PLT, this is omitted or has a zero
+   value.  */
+const DT_MIPS_RWPLT: u32 = 0x4;
+/* An alternative description of the classic MIPS RLD_MAP that is usable
+   in a PIE as it stores a relative offset from the address of the tag
+   rather than an absolute address.  */
+const DT_MIPS_RLD_MAP_REL: u32 = 0x5;
+/* GNU-style hash table with xlat.  */
+const DT_MIPS_XHASH: u32 = 0x6;
+const DT_MIPS_NUM: u32 = 0x7;
+
+/* Legal values for DT_MIPS_FLAGS Elf32_Dyn entry.  */
+
+const RHF_NONE: u32 = 0;		/* No flags */
+const RHF_QUICKSTART: u32 = (1 << 0);	/* Use quickstart */
+const RHF_NOTPOT: u32 = (1 << 1);	/* Hash size not power of 2 */
+const RHF_NO_LIBRARY_REPLACEMENT: u32 = (1 << 2);	/* Ignore LD_LIBRARY_PATH */
+const RHF_NO_MOVE: u32 = (1 << 3);
+const RHF_SGI_ONLY: u32 = (1 << 4);
+const RHF_GUARANTEE_INIT: u32 = (1 << 5);
+const RHF_DELTA_C_PLUS_PLUS: u32 = (1 << 6);
+const RHF_GUARANTEE_START_INIT: u32 = (1 << 7);
+const RHF_PIXIE: u32 = (1 << 8);
+const RHF_DEFAULT_DELAY_LOAD: u32 = (1 << 9);
+const RHF_REQUICKSTART: u32 = (1 << 10);
+const RHF_REQUICKSTARTED: u32 = (1 << 11);
+const RHF_CORD: u32 = (1 << 12);
+const RHF_NO_UNRES_UNDEF: u32 = (1 << 13);
+const RHF_RLD_ORDER_SAFE: u32 = (1 << 14);
+
+/* Entries found in sections of u8 SHT_MIPS_LIBLIST.  */
+
+struct Elf32_Lib {
+	l_name: u32,		/* Name (string table index) */
+	l_time_stamp: u32,	/* Timestamp */
+	l_checksum: u32,	/* Checksum */
+	l_version: u32,		/* Interface version */
+	l_flags: u32,		/* Flags */
+}
+
+struct Elf64_Lib {
+	l_name: u32,		/* Name (string table index) */
+	l_time_stamp: u32,	/* Timestamp */
+	l_checksum: u32,	/* Checksum */
+	l_version: u32,		/* Interface version */
+	l_flags: u32,		/* Flags */
+} 
+
+
+/* Legal values for l_flags.  */
+
+const LL_NONE: u32 = 0;
+const LL_EXACT_MATCH: u32 = (1 << 0);	/* Require exact match */
+const LL_IGNORE_INT_VER: u32 = (1 << 1);	/* Ignore interface version */
+const LL_REQUIRE_MINOR: u32 = (1 << 2);
+const LL_EXPORTS: u32 = (1 << 3);
+const LL_DELAY_LOAD: u32 = (1 << 4);
+const LL_DELTA: u32 = (1 << 5);
+
+/* Entries found in sections of u8 SHT_MIPS_CONFLICT.  */
+
+
+struct Elf_MIPS_ABIFlags_v0 {
+  /* Version of flags structure.  */
+	version: u16,
+  /* The level of the ISA: 1-5, 32, 64.  */
+	isa_level: u8,
+  /* The revision of ISA: 0 for MIPS V and below, 1-n otherwise.  */
+	isa_rev: u8,
+  /* The size of general purpose registers.  */
+	gpr_size: u8,
+  /* The size of co-processor 1 registers.  */
+	cpr1_size: u8,
+  /* The size of co-processor 2 registers.  */
+	cpr2_size: u8,
+  /* The floating-point ABI.  */
+	fp_abi: u8,
+  /* Processor-specific extension.  */
+	isa_ext: u32,
+  /* Mask of ASEs used.  */
+	ases: u32,
+  /* Mask of general flags.  */
+	flags1: u32,
+	flags2: u32,
+} 
+
+/* Values for the register size bytes of an abi flags structure.  */
+
+const MIPS_AFL_REG_NONE: u8 = 0x0;	 /* No registers.  */
+const MIPS_AFL_REG_32: u8 = 0x1;	 /* 32-bit registers.  */
+const MIPS_AFL_REG_64: u8 = 0x2;	 /* 64-bit registers.  */
+const MIPS_AFL_REG_128: u8 = 0x3;	 /* 128-bit registers.  */
+
+/* Masks for the ases word of an ABI flags structure.  */
+
+const MIPS_AFL_ASE_DSP: u32 = 0x1; /* DSP ASE.  */
+const MIPS_AFL_ASE_DSPR2: u32 = 0x2; /* DSP R2 ASE.  */
+const MIPS_AFL_ASE_EVA: u32 = 0x4; /* Enhanced VA Scheme.  */
+const MIPS_AFL_ASE_MCU: u32 = 0x8; /* MCU (MicroController) ASE.  */
+const MIPS_AFL_ASE_MDMX: u32 = 0x0; /* MDMX ASE.  */
+const MIPS_AFL_ASE_MIPS3D: u32 = 0x0; /* MIPS-3D ASE.  */
+const MIPS_AFL_ASE_MT: u32 = 0x0; /* MT ASE.  */
+const MIPS_AFL_ASE_SMARTMIPS: u32 = 0x0; /* SmartMIPS ASE.  */
+const MIPS_AFL_ASE_VIRT: u32 = 0x0; /* VZ ASE.  */
+const MIPS_AFL_ASE_MSA: u32 = 0x0; /* MSA ASE.  */
+const MIPS_AFL_ASE_MIPS16: u32 = 0x0; /* MIPS16 ASE.  */
+const MIPS_AFL_ASE_MICROMIPS: u32 = 0x0; /* MICROMIPS ASE.  */
+const MIPS_AFL_ASE_XPA: u32 = 0x0; /* XPA ASE.  */
+const MIPS_AFL_ASE_MASK: u32 = 0xf; /* All ASEs.  */
+
+/* Values for the isa_ext word of an ABI flags structure.  */
+
+const MIPS_AFL_EXT_XLR: u32 = 1;   /* RMI Xlr instruction.  */
+const MIPS_AFL_EXT_OCTEON2: u32 = 2;   /* Cavium Networks Octeon2.  */
+const MIPS_AFL_EXT_OCTEONP: u32 = 3;   /* Cavium Networks OcteonP.  */
+const MIPS_AFL_EXT_LOONGSON_3A: u32 = 4;   /* Loongson 3A.  */
+const MIPS_AFL_EXT_OCTEON: u32 = 5;   /* Cavium Networks Octeon.  */
+const MIPS_AFL_EXT_5900: u32 = 6;   /* MIPS R5900 instruction.  */
+const MIPS_AFL_EXT_4650: u32 = 7;   /* MIPS R4650 instruction.  */
+const MIPS_AFL_EXT_4010: u32 = 8;   /* LSI R4010 instruction.  */
+const MIPS_AFL_EXT_4100: u32 = 9;   /* NEC VR4100 instruction.  */
+const MIPS_AFL_EXT_3900: u32 = 10;  /* Toshiba R3900 instruction.  */
+const MIPS_AFL_EXT_10000: u32 = 11;  /* MIPS R10000 instruction.  */
+const MIPS_AFL_EXT_SB1: u32 = 12;  /* Broadcom SB-1 instruction.  */
+const MIPS_AFL_EXT_4111: u32 = 13;  /* NEC VR4111/VR4181 instruction.  */
+const MIPS_AFL_EXT_4120: u32 = 14;  /* NEC VR4120 instruction.  */
+const MIPS_AFL_EXT_5400: u32 = 15;  /* NEC VR5400 instruction.  */
+const MIPS_AFL_EXT_5500: u32 = 16;  /* NEC VR5500 instruction.  */
+const MIPS_AFL_EXT_LOONGSON_2E: u32 = 17;  /* ST Microelectronics Loongson 2E.  */
+const MIPS_AFL_EXT_LOONGSON_2F: u32 = 18;  /* ST Microelectronics Loongson 2F.  */
+
+/* Masks for the flags1 word of an ABI flags structure.  */
+const MIPS_AFL_FLAGS1_ODDSPREG: u32 = 1;  /* Uses odd single-precision registers.  */
+
+/* Object attribute values.  */
+  /* Not tagged or not using any ABIs affected by the differences.  */
+	const Val_GNU_MIPS_ABI_FP_ANY: u8 = 0;
+  /* Using hard-float -mdouble-float.  */
+	const Val_GNU_MIPS_ABI_FP_DOUBLE: u8 = 1;
+  /* Using hard-float -msingle-float.  */
+	const Val_GNU_MIPS_ABI_FP_SINGLE: u8 = 2;
+  /* Using soft-float.  */
+	const Val_GNU_MIPS_ABI_FP_SOFT: u8 = 3;
+  /* Using -mips32r2 -mfp64.  */
+	const Val_GNU_MIPS_ABI_FP_OLD_64: u8 = 4;
+  /* Using -mfpxx.  */
+	const Val_GNU_MIPS_ABI_FP_XX: u8 = 5;
+  /* Using -mips32r2 -mfp64.  */
+	const Val_GNU_MIPS_ABI_FP_64: u8 = 6;
+  /* Using -mips32r2 -mfp64 -mno-odd-spreg.  */
+	const Val_GNU_MIPS_ABI_FP_64A: u8 = 7;
+  /* Maximum allocated FP ABI value.  */
+	const Val_GNU_MIPS_ABI_FP_MAX: u8 = 7;
+
+/* HPPA specific definitions.  */
+
+/* Legal values for e_flags field of Elf32_Ehdr.  */
+
+const EF_PARISC_TRAPNIL: u32 = 0x0; /* Trap nil pointer dereference.  */
+const EF_PARISC_EXT: u32 = 0x0; /* Program uses arch. extensions. */
+const EF_PARISC_LSB: u32 = 0x0; /* Program expects little endian. */
+const EF_PARISC_WIDE: u32 = 0x0; /* Program expects wide mode.  */
+const EF_PARISC_NO_KABP: u32 = 0x0; /* No kernel assisted branch
+					      prediction.  */
+const EF_PARISC_LAZYSWAP: u32 = 0x0; /* Allow lazy swapping.  */
+const EF_PARISC_ARCH: u32 = 0xf; /* Architecture version.  */
+
+/* Defined values for `e_flags & EF_PARISC_ARCH' are:  */
+
+const EFA_PARISC_1_0: u8 = 0xb; /* PA-RISC 1.0 big-endian.  */
+const EFA_PARISC_1_1: u8 = 0x0; /* PA-RISC 1.1 big-endian.  */
+const EFA_PARISC_2_0: u8 = 0x4; /* PA-RISC 2.0 big-endian.  */
+
+/* Additional section indices.  */
+
+const SHN_PARISC_ANSI_COMMON: u8 = 0x0;	   /* Section for tentatively declared
+					      symbols in ANSI C.  */
+const SHN_PARISC_HUGE_COMMON: u8 = 0x1;	   /* Common blocks in huge model.  */
+
+/* Legal values for sh_u8 field of Elf32_Shdr.  */
+
+const SHT_PARISC_EXT: u32 = 0x0; /* Contains product specific ext. */
+const SHT_PARISC_UNWIND: u32 = 0x1; /* Unwind information.  */
+const SHT_PARISC_DOC: u32 = 0x2; /* Debug info for optimized code. */
+
+/* Legal values for sh_flags field of Elf32_Shdr.  */
+
+const SHF_PARISC_SHORT: u32 = 0x0; /* Section with short addressing. */
+const SHF_PARISC_HUGE: u32 = 0x0; /* Section far from gp.  */
+const SHF_PARISC_SBP: u32 = 0x0; /* Static branch prediction code. */
+
+/* Legal values for ST_TYPE subfield of st_info (symbol u32).  */
+
+const STT_PARISC_MILLICODE: u32 = 13;	/* Millicode function entry point.  */
+
+const STT_HP_OPAQUE: u32 = (STT_LOOS + 0x1) as u32 ;
+const STT_HP_STUB: u32 = (STT_LOOS + 0x2) as u32;
+
+/* HPPA relocs.  */
+
+const R_PARISC_NONE: u32 = 0;	/* No reloc.  */
+const R_PARISC_DIR32: u32 = 1;	/* Direct 32-bit reference.  */
+const R_PARISC_DIR21L: u32 = 2;	/* Left 21 bits of eff. address.  */
+const R_PARISC_DIR17R: u32 = 3;	/* Right 17 bits of eff. address.  */
+const R_PARISC_DIR17F: u32 = 4;	/* 17 bits of eff. address.  */
+const R_PARISC_DIR14R: u32 = 6;	/* Right 14 bits of eff. address.  */
+const R_PARISC_PCREL32: u32 = 9;	/* 32-bit rel. address.  */
+const R_PARISC_PCREL21L: u32 = 10;	/* Left 21 bits of rel. address.  */
+const R_PARISC_PCREL17R: u32 = 11;	/* Right 17 bits of rel. address.  */
+const R_PARISC_PCREL17F: u32 = 12;	/* 17 bits of rel. address.  */
+const R_PARISC_PCREL14R: u32 = 14;	/* Right 14 bits of rel. address.  */
+const R_PARISC_DPREL21L: u32 = 18;	/* Left 21 bits of rel. address.  */
+const R_PARISC_DPREL14R: u32 = 22;	/* Right 14 bits of rel. address.  */
+const R_PARISC_GPREL21L: u32 = 26;	/* GP-relative, left 21 bits.  */
+const R_PARISC_GPREL14R: u32 = 30;	/* GP-relative, right 14 bits.  */
+const R_PARISC_LTOFF21L: u32 = 34;	/* LT-relative, left 21 bits.  */
+const R_PARISC_LTOFF14R: u32 = 38;	/* LT-relative, right 14 bits.  */
+const R_PARISC_SECREL32: u32 = 41;	/* 32 bits section rel. address.  */
+const R_PARISC_SEGBASE: u32 = 48;	/* No relocation, set segment base.  */
+const R_PARISC_SEGREL32: u32 = 49;	/* 32 bits segment rel. address.  */
+const R_PARISC_PLTOFF21L: u32 = 50;	/* PLT rel. address, left 21 bits.  */
+const R_PARISC_PLTOFF14R: u32 = 54;	/* PLT rel. address, right 14 bits.  */
+const R_PARISC_LTOFF_FPTR32: u32 = 57;	/* 32 bits LT-rel. function pointer. */
+const R_PARISC_LTOFF_FPTR21L: u32 = 58;	/* LT-rel. fct ptr, left 21 bits. */
+const R_PARISC_LTOFF_FPTR14R: u32 = 62;	/* LT-rel. fct ptr, right 14 bits. */
+const R_PARISC_FPTR64: u32 = 64;	/* 64 bits function address.  */
+const R_PARISC_PLABEL32: u32 = 65;	/* 32 bits function address.  */
+const R_PARISC_PLABEL21L: u32 = 66;	/* Left 21 bits of fdesc address.  */
+const R_PARISC_PLABEL14R: u32 = 70;	/* Right 14 bits of fdesc address.  */
+const R_PARISC_PCREL64: u32 = 72;	/* 64 bits PC-rel. address.  */
+const R_PARISC_PCREL22F: u32 = 74;	/* 22 bits PC-rel. address.  */
+const R_PARISC_PCREL14WR: u32 = 75;	/* PC-rel. address, right 14 bits.  */
+const R_PARISC_PCREL14DR: u32 = 76;	/* PC rel. address, right 14 bits.  */
+const R_PARISC_PCREL16F: u32 = 77;	/* 16 bits PC-rel. address.  */
+const R_PARISC_PCREL16WF: u32 = 78;	/* 16 bits PC-rel. address.  */
+const R_PARISC_PCREL16DF: u32 = 79;	/* 16 bits PC-rel. address.  */
+const R_PARISC_DIR64: u32 = 80;	/* 64 bits of eff. address.  */
+const R_PARISC_DIR14WR: u32 = 83;	/* 14 bits of eff. address.  */
+const R_PARISC_DIR14DR: u32 = 84;	/* 14 bits of eff. address.  */
+const R_PARISC_DIR16F: u32 = 85;	/* 16 bits of eff. address.  */
+const R_PARISC_DIR16WF: u32 = 86;	/* 16 bits of eff. address.  */
+const R_PARISC_DIR16DF: u32 = 87;	/* 16 bits of eff. address.  */
+const R_PARISC_GPREL64: u32 = 88;	/* 64 bits of GP-rel. address.  */
+const R_PARISC_GPREL14WR: u32 = 91;	/* GP-rel. address, right 14 bits.  */
+const R_PARISC_GPREL14DR: u32 = 92;	/* GP-rel. address, right 14 bits.  */
+const R_PARISC_GPREL16F: u32 = 93;	/* 16 bits GP-rel. address.  */
+const R_PARISC_GPREL16WF: u32 = 94;	/* 16 bits GP-rel. address.  */
+const R_PARISC_GPREL16DF: u32 = 95;	/* 16 bits GP-rel. address.  */
+const R_PARISC_LTOFF64: u32 = 96;	/* 64 bits LT-rel. address.  */
+const R_PARISC_LTOFF14WR: u32 = 99;	/* LT-rel. address, right 14 bits.  */
+const R_PARISC_LTOFF14DR: u32 = 100;	/* LT-rel. address, right 14 bits.  */
+const R_PARISC_LTOFF16F: u32 = 101;	/* 16 bits LT-rel. address.  */
+const R_PARISC_LTOFF16WF: u32 = 102;	/* 16 bits LT-rel. address.  */
+const R_PARISC_LTOFF16DF: u32 = 103;	/* 16 bits LT-rel. address.  */
+const R_PARISC_SECREL64: u32 = 104;	/* 64 bits section rel. address.  */
+const R_PARISC_SEGREL64: u32 = 112;	/* 64 bits segment rel. address.  */
+const R_PARISC_PLTOFF14WR: u32 = 115;	/* PLT-rel. address, right 14 bits.  */
+const R_PARISC_PLTOFF14DR: u32 = 116;	/* PLT-rel. address, right 14 bits.  */
+const R_PARISC_PLTOFF16F: u32 = 117;	/* 16 bits LT-rel. address.  */
+const R_PARISC_PLTOFF16WF: u32 = 118;	/* 16 bits PLT-rel. address.  */
+const R_PARISC_PLTOFF16DF: u32 = 119;	/* 16 bits PLT-rel. address.  */
+const R_PARISC_LTOFF_FPTR64: u32 = 120;	/* 64 bits LT-rel. function ptr.  */
+const R_PARISC_LTOFF_FPTR14WR: u32 = 123;	/* LT-rel. fct. ptr., right 14 bits. */
+const R_PARISC_LTOFF_FPTR14DR: u32 = 124;	/* LT-rel. fct. ptr., right 14 bits. */
+const R_PARISC_LTOFF_FPTR16F: u32 = 125;	/* 16 bits LT-rel. function ptr.  */
+const R_PARISC_LTOFF_FPTR16WF: u32 = 126;	/* 16 bits LT-rel. function ptr.  */
+const R_PARISC_LTOFF_FPTR16DF: u32 = 127;	/* 16 bits LT-rel. function ptr.  */
+const R_PARISC_LORESERVE: u32 = 128;
+const R_PARISC_COPY: u32 = 128;	/* Copy relocation.  */
+const R_PARISC_IPLT: u32 = 129;	/* Dynamic reloc, imported PLT */
+const R_PARISC_EPLT: u32 = 130;	/* Dynamic reloc, exported PLT */
+const R_PARISC_TPREL32: u32 = 153;	/* 32 bits TP-rel. address.  */
+const R_PARISC_TPREL21L: u32 = 154;	/* TP-rel. address, left 21 bits.  */
+const R_PARISC_TPREL14R: u32 = 158;	/* TP-rel. address, right 14 bits.  */
+const R_PARISC_LTOFF_TP21L: u32 = 162;	/* LT-TP-rel. address, left 21 bits. */
+const R_PARISC_LTOFF_TP14R: u32 = 166;	/* LT-TP-rel. address, right 14 bits.*/
+const R_PARISC_LTOFF_TP14F: u32 = 167;	/* 14 bits LT-TP-rel. address.  */
+const R_PARISC_TPREL64: u32 = 216;	/* 64 bits TP-rel. address.  */
+const R_PARISC_TPREL14WR: u32 = 219;	/* TP-rel. address, right 14 bits.  */
+const R_PARISC_TPREL14DR: u32 = 220;	/* TP-rel. address, right 14 bits.  */
+const R_PARISC_TPREL16F: u32 = 221;	/* 16 bits TP-rel. address.  */
+const R_PARISC_TPREL16WF: u32 = 222;	/* 16 bits TP-rel. address.  */
+const R_PARISC_TPREL16DF: u32 = 223;	/* 16 bits TP-rel. address.  */
+const R_PARISC_LTOFF_TP64: u32 = 224;	/* 64 bits LT-TP-rel. address.  */
+const R_PARISC_LTOFF_TP14WR: u32 = 227;	/* LT-TP-rel. address, right 14 bits.*/
+const R_PARISC_LTOFF_TP14DR: u32 = 228;	/* LT-TP-rel. address, right 14 bits.*/
+const R_PARISC_LTOFF_TP16F: u32 = 229;	/* 16 bits LT-TP-rel. address.  */
+const R_PARISC_LTOFF_TP16WF: u32 = 230;	/* 16 bits LT-TP-rel. address.  */
+const R_PARISC_LTOFF_TP16DF: u32 = 231;	/* 16 bits LT-TP-rel. address.  */
+const R_PARISC_GNU_VTENTRY: u32 = 232;
+const R_PARISC_GNU_VTINHERIT: u32 = 233;
+const R_PARISC_TLS_GD21L: u32 = 234;	/* GD 21-bit left.  */
+const R_PARISC_TLS_GD14R: u32 = 235;	/* GD 14-bit right.  */
+const R_PARISC_TLS_GDCALL: u32 = 236;	/* GD call to __t_g_a.  */
+const R_PARISC_TLS_LDM21L: u32 = 237;	/* LD module 21-bit left.  */
+const R_PARISC_TLS_LDM14R: u32 = 238;	/* LD module 14-bit right.  */
+const R_PARISC_TLS_LDMCALL: u32 = 239;	/* LD module call to __t_g_a.  */
+const R_PARISC_TLS_LDO21L: u32 = 240;	/* LD offset 21-bit left.  */
+const R_PARISC_TLS_LDO14R: u32 = 241;	/* LD offset 14-bit right.  */
+const R_PARISC_TLS_DTPMOD32: u32 = 242;	/* DTP module 32-bit.  */
+const R_PARISC_TLS_DTPMOD64: u32 = 243;	/* DTP module 64-bit.  */
+const R_PARISC_TLS_DTPOFF32: u32 = 244;	/* DTP offset 32-bit.  */
+const R_PARISC_TLS_DTPOFF64: u32 = 245;	/* DTP offset 32-bit.  */
+const R_PARISC_TLS_LE21L: u32 = R_PARISC_TPREL21L;
+const R_PARISC_TLS_LE14R: u32 = R_PARISC_TPREL14R;
+const R_PARISC_TLS_IE21L: u32 = R_PARISC_LTOFF_TP21L;
+const R_PARISC_TLS_IE14R: u32 = R_PARISC_LTOFF_TP14R;
+const R_PARISC_TLS_TPREL32: u32 = R_PARISC_TPREL32;
+const R_PARISC_TLS_TPREL64: u32 = R_PARISC_TPREL64;
+const R_PARISC_HIRESERVE: u32 = 255;
+
+/* Legal values for p_u8 field of Elf32_Phdr/Elf64_Phdr.  */
+
+const PT_HP_TLS: u32 = PT_LOOS + 0x0;
+const PT_HP_CORE_NONE: u32 = PT_LOOS + 0x1;
+const PT_HP_CORE_VERSION: u32 = PT_LOOS + 0x2;
+const PT_HP_CORE_KERNEL: u32 = PT_LOOS + 0x3;
+const PT_HP_CORE_COMM: u32 = PT_LOOS + 0x4;
+const PT_HP_CORE_PROC: u32 = PT_LOOS + 0x5;
+const PT_HP_CORE_LOADABLE: u32 = PT_LOOS + 0x6;
+const PT_HP_CORE_STACK: u32 = PT_LOOS + 0x7;
+const PT_HP_CORE_SHM: u32 = PT_LOOS + 0x8;
+const PT_HP_CORE_MMF: u32 = PT_LOOS + 0x9;
+const PT_HP_PARALLEL: u32 = PT_LOOS + 0x10;
+const PT_HP_FASTBIND: u32 = PT_LOOS + 0x11;
+const PT_HP_OPT_ANNOT: u32 = PT_LOOS + 0x12;
+const PT_HP_HSL_ANNOT: u32 = PT_LOOS + 0x13;
+const PT_HP_STACK: u32 = PT_LOOS + 0x14;
+
+const PT_PARISC_ARCHEXT: u32 = 0x0;
+const PT_PARISC_UNWIND: u32 = 0x1;
+
+/* Legal values for p_flags field of Elf32_Phdr/Elf64_Phdr.  */
+
+const PF_PARISC_SBP: u8 = 0x0;
+
+const PF_HP_PAGE_SIZE: u8 = 0x0;
+const PF_HP_FAR_SHARED: u8 = 0x0;
+const PF_HP_NEAR_SHARED: u8 = 0x0;
+const PF_HP_CODE: u8 = 0x0;
+const PF_HP_MODIFY: u8 = 0x0;
+const PF_HP_LAZYSWAP: u8 = 0x0;
+const PF_HP_SBP: u8 = 0x0;
+
+
+/* Alpha specific definitions.  */
+
+/* Legal values for e_flags field of Elf64_Ehdr.  */
+
+const EF_ALPHA_32BIT: u64 = 1;	/* All addresses must be < 2GB.  */
+const EF_ALPHA_CANRELAX: u64 = 2;	/* Relocations for relaxing exist.  */
+
+/* Legal values for sh_u8 field of Elf64_Shdr.  */
+
+/* These two are primerily concerned with ECOFF debugging info.  */
+const SHT_ALPHA_DEBUG: u32 = 0x1;
+const SHT_ALPHA_REGINFO: u32 = 0x2;
+
+/* Legal values for sh_flags field of Elf64_Shdr.  */
+
+const SHF_ALPHA_GPREL: u64 = 0x0;
+
+/* Legal values for st_other field of Elf64_Sym.  */
+const STO_ALPHA_NOPV: u64 = 0x0;	/* No PV required.  */
+const STO_ALPHA_STD_GPLOAD: u64 = 0x8;	/* PV only used for initial ldgp.  */
+
+/* Alpha relocs.  */
+
+const R_ALPHA_NONE: u8 = 0;	/* No reloc */
+const R_ALPHA_REFLONG: u8 = 1;	/* Direct 32 bit */
+const R_ALPHA_REFQUAD: u8 = 2;	/* Direct 64 bit */
+const R_ALPHA_GPREL32: u8 = 3;	/* GP relative 32 bit */
+const R_ALPHA_LITERAL: u8 = 4;	/* GP relative 16 bit w/optimization */
+const R_ALPHA_LITUSE: u8 = 5;	/* Optimization hint for LITERAL */
+const R_ALPHA_GPDISP: u8 = 6;	/* Add displacement to GP */
+const R_ALPHA_BRADDR: u8 = 7;	/* PC+4 relative 23 bit shifted */
+const R_ALPHA_HINT: u8 = 8;	/* PC+4 relative 16 bit shifted */
+const R_ALPHA_SREL16: u8 = 9;	/* PC relative 16 bit */
+const R_ALPHA_SREL32: u8 = 10;	/* PC relative 32 bit */
+const R_ALPHA_SREL64: u8 = 11;	/* PC relative 64 bit */
+const R_ALPHA_GPRELHIGH: u8 = 17;	/* GP relative 32 bit, high 16 bits */
+const R_ALPHA_GPRELLOW: u8 = 18;	/* GP relative 32 bit, low 16 bits */
+const R_ALPHA_GPREL16: u8 = 19;	/* GP relative 16 bit */
+const R_ALPHA_COPY: u8 = 24;	/* Copy symbol at runtime */
+const R_ALPHA_GLOB_DAT: u8 = 25;	/* Create GOT entry */
+const R_ALPHA_JMP_SLOT: u8 = 26;	/* Create PLT entry */
+const R_ALPHA_RELATIVE: u8 = 27;	/* Adjust by program base */
+const R_ALPHA_TLS_GD_HI: u8 = 28;
+const R_ALPHA_TLSGD: u8 = 29;
+const R_ALPHA_TLS_LDM: u8 = 30;
+const R_ALPHA_DTPMOD64: u8 = 31;
+const R_ALPHA_GOTDTPREL: u8 = 32;
+const R_ALPHA_DTPREL64: u8 = 33;
+const R_ALPHA_DTPRELHI: u8 = 34;
+const R_ALPHA_DTPRELLO: u8 = 35;
+const R_ALPHA_DTPREL16: u8 = 36;
+const R_ALPHA_GOTTPREL: u8 = 37;
+const R_ALPHA_TPREL64: u8 = 38;
+const R_ALPHA_TPRELHI: u8 = 39;
+const R_ALPHA_TPRELLO: u8 = 40;
+const R_ALPHA_TPREL16: u8 = 41;
+/* Keep this the last entry.  */
+const R_ALPHA_NUM: u8 = 46;
+
+/* Magic values of the LITUSE relocation addend.  */
+const LITUSE_ALPHA_ADDR: u8 = 0;
+const LITUSE_ALPHA_BASE: u8 = 1;
+const LITUSE_ALPHA_BYTOFF: u8 = 2;
+const LITUSE_ALPHA_JSR: u8 = 3;
+const LITUSE_ALPHA_TLS_GD: u8 = 4;
+const LITUSE_ALPHA_TLS_LDM: u8 = 5;
+
+/* Legal values for d_tag of Elf64_Dyn.  */
+const DT_ALPHA_PLTRO: u8 = (DT_LOPROC + 0);
+const DT_ALPHA_NUM: u8 = 1;
+
+/* PowerPC specific declarations */
+
+/* Values for Elf32/64_Ehdr.e_flags.  */
+const EF_PPC_EMB: u8 = 0x0;	/* PowerPC embedded flag */
+
+/* Cygnus local bits below */
+const EF_PPC_RELOCATABLE: u8 = 0x0;	/* PowerPC -mrelocatable flag*/
+const EF_PPC_RELOCATABLE_LIB: u8 = 0x0;	/* PowerPC -mrelocatable-lib
+						   flag */
+
+/* PowerPC relocations defined by the ABIs */
+const R_PPC_NONE: u8 = 0;
+const R_PPC_ADDR32: u8 = 1;	/* 32bit absolute address */
+const R_PPC_ADDR24: u8 = 2;	/* 26bit address, 2 bits ignored.  */
+const R_PPC_ADDR16: u8 = 3;	/* 16bit absolute address */
+const R_PPC_ADDR16_LO: u8 = 4;	/* lower 16bit of absolute address */
+const R_PPC_ADDR16_HI: u8 = 5;	/* high 16bit of absolute address */
+const R_PPC_ADDR16_HA: u8 = 6;	/* adjusted high 16bit */
+const R_PPC_ADDR14: u8 = 7;	/* 16bit address, 2 bits ignored */
+const R_PPC_ADDR14_BRTAKEN: u8 = 8;
+const R_PPC_ADDR14_BRNTAKEN: u8 = 9;
+const R_PPC_REL24: u8 = 10;	/* PC relative 26 bit */
+const R_PPC_REL14: u8 = 11;	/* PC relative 16 bit */
+const R_PPC_REL14_BRTAKEN: u8 = 12;
+const R_PPC_REL14_BRNTAKEN: u8 = 13;
+const R_PPC_GOT16: u8 = 14;
+const R_PPC_GOT16_LO: u8 = 15;
+const R_PPC_GOT16_HI: u8 = 16;
+const R_PPC_GOT16_HA: u8 = 17;
+const R_PPC_PLTREL24: u8 = 18;
+const R_PPC_COPY: u8 = 19;
+const R_PPC_GLOB_DAT: u8 = 20;
+const R_PPC_JMP_SLOT: u8 = 21;
+const R_PPC_RELATIVE: u8 = 22;
+const R_PPC_LOCAL24PC: u8 = 23;
+const R_PPC_UADDR32: u8 = 24;
+const R_PPC_UADDR16: u8 = 25;
+const R_PPC_REL32: u8 = 26;
+const R_PPC_PLT32: u8 = 27;
+const R_PPC_PLTREL32: u8 = 28;
+const R_PPC_PLT16_LO: u8 = 29;
+const R_PPC_PLT16_HI: u8 = 30;
+const R_PPC_PLT16_HA: u8 = 31;
+const R_PPC_SDAREL16: u8 = 32;
+const R_PPC_SECTOFF: u8 = 33;
+const R_PPC_SECTOFF_LO: u8 = 34;
+const R_PPC_SECTOFF_HI: u8 = 35;
+const R_PPC_SECTOFF_HA: u8 = 36;
+
+/* PowerPC relocations defined for the TLS access ABI.  */
+const R_PPC_TLS: u8 = 67; /* none	(sym+add)@tls */
+const R_PPC_DTPMOD32: u8 = 68; /* word32	(sym+add)@dtpmod */
+const R_PPC_TPREL16: u8 = 69; /* half16*	(sym+add)@tprel */
+const R_PPC_TPREL16_LO: u8 = 70; /* half16	(sym+add)@tprel@l */
+const R_PPC_TPREL16_HI: u8 = 71; /* half16	(sym+add)@tprel@h */
+const R_PPC_TPREL16_HA: u8 = 72; /* half16	(sym+add)@tprel@ha */
+const R_PPC_TPREL32: u8 = 73; /* word32	(sym+add)@tprel */
+const R_PPC_DTPREL16: u8 = 74; /* half16*	(sym+add)@dtprel */
+const R_PPC_DTPREL16_LO: u8 = 75; /* half16	(sym+add)@dtprel@l */
+const R_PPC_DTPREL16_HI: u8 = 76; /* half16	(sym+add)@dtprel@h */
+const R_PPC_DTPREL16_HA: u8 = 77; /* half16	(sym+add)@dtprel@ha */
+const R_PPC_DTPREL32: u8 = 78; /* word32	(sym+add)@dtprel */
+const R_PPC_GOT_TLSGD16: u8 = 79; /* half16*	(sym+add)@got@tlsgd */
+const R_PPC_GOT_TLSGD16_LO: u8 = 80; /* half16	(sym+add)@got@tlsgd@l */
+const R_PPC_GOT_TLSGD16_HI: u8 = 81; /* half16	(sym+add)@got@tlsgd@h */
+const R_PPC_GOT_TLSGD16_HA: u8 = 82; /* half16	(sym+add)@got@tlsgd@ha */
+const R_PPC_GOT_TLSLD16: u8 = 83; /* half16*	(sym+add)@got@tlsld */
+const R_PPC_GOT_TLSLD16_LO: u8 = 84; /* half16	(sym+add)@got@tlsld@l */
+const R_PPC_GOT_TLSLD16_HI: u8 = 85; /* half16	(sym+add)@got@tlsld@h */
+const R_PPC_GOT_TLSLD16_HA: u8 = 86; /* half16	(sym+add)@got@tlsld@ha */
+const R_PPC_GOT_TPREL16: u8 = 87; /* half16*	(sym+add)@got@tprel */
+const R_PPC_GOT_TPREL16_LO: u8 = 88; /* half16	(sym+add)@got@tprel@l */
+const R_PPC_GOT_TPREL16_HI: u8 = 89; /* half16	(sym+add)@got@tprel@h */
+const R_PPC_GOT_TPREL16_HA: u8 = 90; /* half16	(sym+add)@got@tprel@ha */
+const R_PPC_GOT_DTPREL16: u8 = 91; /* half16*	(sym+add)@got@dtprel */
+const R_PPC_GOT_DTPREL16_LO: u8 = 92; /* half16*	(sym+add)@got@dtprel@l */
+const R_PPC_GOT_DTPREL16_HI: u8 = 93; /* half16*	(sym+add)@got@dtprel@h */
+const R_PPC_GOT_DTPREL16_HA: u8 = 94; /* half16*	(sym+add)@got@dtprel@ha */
+const R_PPC_TLSGD: u8 = 95; /* none	(sym+add)@tlsgd */
+const R_PPC_TLSLD: u8 = 96; /* none	(sym+add)@tlsld */
+
+/* The remaining relocs are from the Embedded ELF ABI, and are not
+   in the SVR4 ELF ABI.  */
+const R_PPC_EMB_NADDR32: u8 = 101;
+const R_PPC_EMB_NADDR16: u8 = 102;
+const R_PPC_EMB_NADDR16_LO: u8 = 103;
+const R_PPC_EMB_NADDR16_HI: u8 = 104;
+const R_PPC_EMB_NADDR16_HA: u8 = 105;
+const R_PPC_EMB_SDAI16: u8 = 106;
+const R_PPC_EMB_SDA2I16: u8 = 107;
+const R_PPC_EMB_SDA2REL: u8 = 108;
+const R_PPC_EMB_SDA21: u8 = 109;	/* 16 bit offset in SDA */
+const R_PPC_EMB_MRKREF: u8 = 110;
+const R_PPC_EMB_RELSEC16: u8 = 111;
+const R_PPC_EMB_RELST_LO: u8 = 112;
+const R_PPC_EMB_RELST_HI: u8 = 113;
+const R_PPC_EMB_RELST_HA: u8 = 114;
+const R_PPC_EMB_BIT_FLD: u8 = 115;
+const R_PPC_EMB_RELSDA: u8 = 116;	/* 16 bit relative offset in SDA */
+
+/* Diab tool relocations.  */
+const R_PPC_DIAB_SDA21_LO: u8 = 180;	/* like EMB_SDA21, but lower 16 bit */
+const R_PPC_DIAB_SDA21_HI: u8 = 181;	/* like EMB_SDA21, but high 16 bit */
+const R_PPC_DIAB_SDA21_HA: u8 = 182;	/* like EMB_SDA21, adjusted high 16 */
+const R_PPC_DIAB_RELSDA_LO: u8 = 183;	/* like EMB_RELSDA, but lower 16 bit */
+const R_PPC_DIAB_RELSDA_HI: u8 = 184;	/* like EMB_RELSDA, but high 16 bit */
+const R_PPC_DIAB_RELSDA_HA: u8 = 185;	/* like EMB_RELSDA, adjusted high 16 */
+
+/* GNU extension to support local ifunc.  */
+const R_PPC_IRELATIVE: u8 = 248;
+
+/* GNU relocs used in PIC code sequences.  */
+const R_PPC_REL16: u8 = 249;	/* half16   (sym+add-.) */
+const R_PPC_REL16_LO: u8 = 250;	/* half16   (sym+add-.)@l */
+const R_PPC_REL16_HI: u8 = 251;	/* half16   (sym+add-.)@h */
+const R_PPC_REL16_HA: u8 = 252;	/* half16   (sym+add-.)@ha */
+
+/* This is a phony reloc to handle any old fashioned TOC16 references
+   that may still be in object files.  */
+const R_PPC_TOC16: u8 = 255;
+
+/* PowerPC specific values for the Dyn d_tag field.  */
+const DT_PPC_GOT: u8 = (DT_LOPROC + 0);
+const DT_PPC_OPT: u8 = (DT_LOPROC + 1);
+const DT_PPC_NUM: u8 = 2;
+
+/* PowerPC specific values for the DT_PPC_OPT Dyn entry.  */
+const PPC_OPT_TLS: u8 = 1;
+
+/* PowerPC64 relocations defined by the ABIs */
+const R_PPC64_NONE: u8 = R_PPC_NONE;
+const R_PPC64_ADDR32: u8 = R_PPC_ADDR32; /* 32bit absolute address */
+const R_PPC64_ADDR24: u8 = R_PPC_ADDR24; /* 26bit address, word aligned */
+const R_PPC64_ADDR16: u8 = R_PPC_ADDR16; /* 16bit absolute address */
+const R_PPC64_ADDR16_LO: u8 = R_PPC_ADDR16_LO;	/* lower 16bits of address */
+const R_PPC64_ADDR16_HI: u8 = R_PPC_ADDR16_HI;	/* high 16bits of address. */
+const R_PPC64_ADDR16_HA: u8 = R_PPC_ADDR16_HA; /* adjusted high 16bits.  */
+const R_PPC64_ADDR14: u8 = R_PPC_ADDR14; /* 16bit address, word aligned */
+const R_PPC64_ADDR14_BRTAKEN: u8 = R_PPC_ADDR14_BRTAKEN;
+const R_PPC64_ADDR14_BRNTAKEN: u8 = R_PPC_ADDR14_BRNTAKEN;
+const R_PPC64_REL24: u8 = R_PPC_REL24; /* PC-rel. 26 bit, word aligned */
+const R_PPC64_REL14: u8 = R_PPC_REL14; /* PC relative 16 bit */
+const R_PPC64_REL14_BRTAKEN: u8 = R_PPC_REL14_BRTAKEN;
+const R_PPC64_REL14_BRNTAKEN: u8 = R_PPC_REL14_BRNTAKEN;
+const R_PPC64_GOT16: u8 = R_PPC_GOT16;
+const R_PPC64_GOT16_LO: u8 = R_PPC_GOT16_LO;
+const R_PPC64_GOT16_HI: u8 = R_PPC_GOT16_HI;
+const R_PPC64_GOT16_HA: u8 = R_PPC_GOT16_HA;
+
+const R_PPC64_COPY: u8 = R_PPC_COPY;
+const R_PPC64_GLOB_DAT: u8 = R_PPC_GLOB_DAT;
+const R_PPC64_JMP_SLOT: u8 = R_PPC_JMP_SLOT;
+const R_PPC64_RELATIVE: u8 = R_PPC_RELATIVE;
+
+const R_PPC64_UADDR32: u8 = R_PPC_UADDR32;
+const R_PPC64_UADDR16: u8 = R_PPC_UADDR16;
+const R_PPC64_REL32: u8 = R_PPC_REL32;
+const R_PPC64_PLT32: u8 = R_PPC_PLT32;
+const R_PPC64_PLTREL32: u8 = R_PPC_PLTREL32;
+const R_PPC64_PLT16_LO: u8 = R_PPC_PLT16_LO;
+const R_PPC64_PLT16_HI: u8 = R_PPC_PLT16_HI;
+const R_PPC64_PLT16_HA: u8 = R_PPC_PLT16_HA;
+
+const R_PPC64_SECTOFF: u8 = R_PPC_SECTOFF;
+const R_PPC64_SECTOFF_LO: u8 = R_PPC_SECTOFF_LO;
+const R_PPC64_SECTOFF_HI: u8 = R_PPC_SECTOFF_HI;
+const R_PPC64_SECTOFF_HA: u8 = R_PPC_SECTOFF_HA;
+const R_PPC64_ADDR30: u8 = 37; /* word30 (S + A - P) >> 2 */
+const R_PPC64_ADDR64: u8 = 38; /* doubleword64 S + A */
+const R_PPC64_ADDR16_HIGHER: u8 = 39; /* half16 #higher(S + A) */
+const R_PPC64_ADDR16_HIGHERA: u8 = 40; /* half16 #highera(S + A) */
+const R_PPC64_ADDR16_HIGHEST: u8 = 41; /* half16 #highest(S + A) */
+const R_PPC64_ADDR16_HIGHESTA: u8 = 42; /* half16 #highesta(S + A) */
+const R_PPC64_UADDR64: u8 = 43; /* doubleword64 S + A */
+const R_PPC64_REL64: u8 = 44; /* doubleword64 S + A - P */
+const R_PPC64_PLT64: u8 = 45; /* doubleword64 L + A */
+const R_PPC64_PLTREL64: u8 = 46; /* doubleword64 L + A - P */
+const R_PPC64_TOC16: u8 = 47; /* half16* S + A - .TOC */
+const R_PPC64_TOC16_LO: u8 = 48; /* half16 #lo(S + A - .TOC.) */
+const R_PPC64_TOC16_HI: u8 = 49; /* half16 #hi(S + A - .TOC.) */
+const R_PPC64_TOC16_HA: u8 = 50; /* half16 #ha(S + A - .TOC.) */
+const R_PPC64_TOC: u8 = 51; /* doubleword64 .TOC */
+const R_PPC64_PLTGOT16: u8 = 52; /* half16* M + A */
+const R_PPC64_PLTGOT16_LO: u8 = 53; /* half16 #lo(M + A) */
+const R_PPC64_PLTGOT16_HI: u8 = 54; /* half16 #hi(M + A) */
+const R_PPC64_PLTGOT16_HA: u8 = 55; /* half16 #ha(M + A) */
+
+const R_PPC64_ADDR16_DS: u8 = 56; /* half16ds* (S + A) >> 2 */
+const R_PPC64_ADDR16_LO_DS: u8 = 57; /* half16ds  #lo(S + A) >> 2 */
+const R_PPC64_GOT16_DS: u8 = 58; /* half16ds* (G + A) >> 2 */
+const R_PPC64_GOT16_LO_DS: u8 = 59; /* half16ds  #lo(G + A) >> 2 */
+const R_PPC64_PLT16_LO_DS: u8 = 60; /* half16ds  #lo(L + A) >> 2 */
+const R_PPC64_SECTOFF_DS: u8 = 61; /* half16ds* (R + A) >> 2 */
+const R_PPC64_SECTOFF_LO_DS: u8 = 62; /* half16ds  #lo(R + A) >> 2 */
+const R_PPC64_TOC16_DS: u8 = 63; /* half16ds* (S + A - .TOC.) >> 2 */
+const R_PPC64_TOC16_LO_DS: u8 = 64; /* half16ds  #lo(S + A - .TOC.) >> 2 */
+const R_PPC64_PLTGOT16_DS: u8 = 65; /* half16ds* (M + A) >> 2 */
+const R_PPC64_PLTGOT16_LO_DS: u8 = 66; /* half16ds  #lo(M + A) >> 2 */
+
+/* PowerPC64 relocations defined for the TLS access ABI.  */
+const R_PPC64_TLS: u8 = 67; /* none	(sym+add)@tls */
+const R_PPC64_DTPMOD64: u8 = 68; /* doubleword64 (sym+add)@dtpmod */
+const R_PPC64_TPREL16: u8 = 69; /* half16*	(sym+add)@tprel */
+const R_PPC64_TPREL16_LO: u8 = 70; /* half16	(sym+add)@tprel@l */
+const R_PPC64_TPREL16_HI: u8 = 71; /* half16	(sym+add)@tprel@h */
+const R_PPC64_TPREL16_HA: u8 = 72; /* half16	(sym+add)@tprel@ha */
+const R_PPC64_TPREL64: u8 = 73; /* doubleword64 (sym+add)@tprel */
+const R_PPC64_DTPREL16: u8 = 74; /* half16*	(sym+add)@dtprel */
+const R_PPC64_DTPREL16_LO: u8 = 75; /* half16	(sym+add)@dtprel@l */
+const R_PPC64_DTPREL16_HI: u8 = 76; /* half16	(sym+add)@dtprel@h */
+const R_PPC64_DTPREL16_HA: u8 = 77; /* half16	(sym+add)@dtprel@ha */
+const R_PPC64_DTPREL64: u8 = 78; /* doubleword64 (sym+add)@dtprel */
+const R_PPC64_GOT_TLSGD16: u8 = 79; /* half16*	(sym+add)@got@tlsgd */
+const R_PPC64_GOT_TLSGD16_LO: u8 = 80; /* half16	(sym+add)@got@tlsgd@l */
+const R_PPC64_GOT_TLSGD16_HI: u8 = 81; /* half16	(sym+add)@got@tlsgd@h */
+const R_PPC64_GOT_TLSGD16_HA: u8 = 82; /* half16	(sym+add)@got@tlsgd@ha */
+const R_PPC64_GOT_TLSLD16: u8 = 83; /* half16*	(sym+add)@got@tlsld */
+const R_PPC64_GOT_TLSLD16_LO: u8 = 84; /* half16	(sym+add)@got@tlsld@l */
+const R_PPC64_GOT_TLSLD16_HI: u8 = 85; /* half16	(sym+add)@got@tlsld@h */
+const R_PPC64_GOT_TLSLD16_HA: u8 = 86; /* half16	(sym+add)@got@tlsld@ha */
+const R_PPC64_GOT_TPREL16_DS: u8 = 87; /* half16ds*	(sym+add)@got@tprel */
+const R_PPC64_GOT_TPREL16_LO_DS: u8 = 88; /* half16ds (sym+add)@got@tprel@l */
+const R_PPC64_GOT_TPREL16_HI: u8 = 89; /* half16	(sym+add)@got@tprel@h */
+const R_PPC64_GOT_TPREL16_HA: u8 = 90; /* half16	(sym+add)@got@tprel@ha */
+const R_PPC64_GOT_DTPREL16_DS: u8 = 91; /* half16ds*	(sym+add)@got@dtprel */
+const R_PPC64_GOT_DTPREL16_LO_DS: u8 = 92; /* half16ds (sym+add)@got@dtprel@l */
+const R_PPC64_GOT_DTPREL16_HI: u8 = 93; /* half16	(sym+add)@got@dtprel@h */
+const R_PPC64_GOT_DTPREL16_HA: u8 = 94; /* half16	(sym+add)@got@dtprel@ha */
+const R_PPC64_TPREL16_DS: u8 = 95; /* half16ds*	(sym+add)@tprel */
+const R_PPC64_TPREL16_LO_DS: u8 = 96; /* half16ds	(sym+add)@tprel@l */
+const R_PPC64_TPREL16_HIGHER: u8 = 97; /* half16	(sym+add)@tprel@higher */
+const R_PPC64_TPREL16_HIGHERA: u8 = 98; /* half16	(sym+add)@tprel@highera */
+const R_PPC64_TPREL16_HIGHEST: u8 = 99; /* half16	(sym+add)@tprel@highest */
+const R_PPC64_TPREL16_HIGHESTA: u8 = 100; /* half16	(sym+add)@tprel@highesta */
+const R_PPC64_DTPREL16_DS: u8 = 101; /* half16ds* (sym+add)@dtprel */
+const R_PPC64_DTPREL16_LO_DS: u8 = 102; /* half16ds	(sym+add)@dtprel@l */
+const R_PPC64_DTPREL16_HIGHER: u8 = 103; /* half16	(sym+add)@dtprel@higher */
+const R_PPC64_DTPREL16_HIGHERA: u8 = 104; /* half16	(sym+add)@dtprel@highera */
+const R_PPC64_DTPREL16_HIGHEST: u8 = 105; /* half16	(sym+add)@dtprel@highest */
+const R_PPC64_DTPREL16_HIGHESTA: u8 = 106; /* half16	(sym+add)@dtprel@highesta */
+const R_PPC64_TLSGD: u8 = 107; /* none	(sym+add)@tlsgd */
+const R_PPC64_TLSLD: u8 = 108; /* none	(sym+add)@tlsld */
+const R_PPC64_TOCSAVE: u8 = 109; /* none */
+
+/* Added when HA and HI relocs were changed to report overflows.  */
+const R_PPC64_ADDR16_HIGH: u8 = 110;
+const R_PPC64_ADDR16_HIGHA: u8 = 111;
+const R_PPC64_TPREL16_HIGH: u8 = 112;
+const R_PPC64_TPREL16_HIGHA: u8 = 113;
+const R_PPC64_DTPREL16_HIGH: u8 = 114;
+const R_PPC64_DTPREL16_HIGHA: u8 = 115;
+
+/* GNU extension to support local ifunc.  */
+const R_PPC64_JMP_IREL: u8 = 247;
+const R_PPC64_IRELATIVE: u8 = 248;
+const R_PPC64_REL16: u8 = 249;	/* half16   (sym+add-.) */
+const R_PPC64_REL16_LO: u8 = 250;	/* half16   (sym+add-.)@l */
+const R_PPC64_REL16_HI: u8 = 251;	/* half16   (sym+add-.)@h */
+const R_PPC64_REL16_HA: u8 = 252;	/* half16   (sym+add-.)@ha */
+
+/* e_flags bits specifying ABI.
+   1 for original function descriptor using ABI,
+   2 for revised ABI without function descriptors,
+   0 for unspecified or not using any features affected by the differences.  */
+const EF_PPC64_ABI: u8 = 3;
+
+/* PowerPC64 specific values for the Dyn d_tag field.  */
+const DT_PPC64_GLINK: u8 = (DT_LOPROC + 0);
+const DT_PPC64_OPD: u8 = (DT_LOPROC + 1);
+const DT_PPC64_OPDSZ: u8 = (DT_LOPROC + 2);
+const DT_PPC64_OPT: u8 = (DT_LOPROC + 3);
+const DT_PPC64_NUM: u8 = 4;
+
+/* PowerPC64 specific bits in the DT_PPC64_OPT Dyn entry.  */
+const PPC64_OPT_TLS: u8 = 1;
+const PPC64_OPT_MULTI_TOC: u8 = 2;
+const PPC64_OPT_LOCALENTRY: u8 = 4;
+
+/* PowerPC64 specific values for the Elf64_Sym st_other field.  */
+const STO_PPC64_LOCAL_BIT: u8 = 5;
+const STO_PPC64_LOCAL_MASK: u8 = (7 << STO_PPC64_LOCAL_BIT);
+fn PPC64_LOCAL_ENTRY_OFFSET(other: u8) -> u8 {
+    (((1 << ((other & STO_PPC64_LOCAL_MASK) >> STO_PPC64_LOCAL_BIT)) >> 2 ) << 2)
+}
+//const PPC64_LOCAL_ENTRY_OFFSET(other)				\
+// (((1 << (((other) & STO_PPC64_LOCAL_MASK) >> STO_PPC64_LOCAL_BIT)) >> 2) << 2)
+
+
+/* ARM specific declarations */
+
+/* Processor specific flags for the ELF header e_flags field.  */
+const EF_ARM_RELEXEC: u8 = 0x1;
+const EF_ARM_HASENTRY: u8 = 0x2;
+const EF_ARM_INTERWORK: u8 = 0x4;
+const EF_ARM_APCS_26: u8 = 0x8;
+const EF_ARM_APCS_FLOAT: u8 = 0x10;
+const EF_ARM_PIC: u8 = 0x20;
+const EF_ARM_ALIGN8: u8 = 0x40; /* 8-bit structure alignment is in use */
+const EF_ARM_NEW_ABI: u8 = 0x80;
+const EF_ARM_OLD_ABI: u8 = 0x100;
+const EF_ARM_SOFT_FLOAT: u8 = 0x200;
+const EF_ARM_VFP_FLOAT: u8 = 0x400;
+const EF_ARM_MAVERICK_FLOAT: u8 = 0x800;
+
+const EF_ARM_ABI_FLOAT_SOFT: u8 = 0x200;   /* NB conflicts with EF_ARM_SOFT_FLOAT */
+const EF_ARM_ABI_FLOAT_HARD: u8 = 0x400;   /* NB conflicts with EF_ARM_VFP_FLOAT */
+
+
+/* Other constants defined in the ARM ELF spec. version B-01.  */
+/* NB. These conflict with values defined above.  */
+const EF_ARM_SYMSARESORTED: u8 = 0x04;
+const EF_ARM_DYNSYMSUSESEGIDX: u8 = 0x08;
+const EF_ARM_MAPSYMSFIRST: u8 = 0x10;
+const EF_ARM_EABIMASK: u8 = 0xFF000000;
+
+/* Constants defined in AAELF.  */
+const EF_ARM_BE8: u8 = 0x00800000;
+const EF_ARM_LE8: u8 = 0x00400000;
+
+//const EF_ARM_EABI_VERSION: u8 = f;lags)	((flags) & EF_ARM_EABIMASK)
+fn EF_ARM_EABI_VERSION(flags: u32) -> u32 {
+    flags & EF_ARM_EABIMASK as u32
+}
+const EF_ARM_EABI_UNKNOWN: u8 = 0x00000000;
+const EF_ARM_EABI_VER1: u8 = 0x01000000;
+const EF_ARM_EABI_VER2: u8 = 0x02000000;
+const EF_ARM_EABI_VER3: u8 = 0x03000000;
+const EF_ARM_EABI_VER4: u8 = 0x04000000;
+const EF_ARM_EABI_VER5: u8 = 0x05000000;
+
+/* Additional symbol u8s for Thumb.  */
+const STT_ARM_TFUNC: u8 = STT_LOPROC; /* A Thumb function.  */
+const STT_ARM_16BIT: u8 = STT_HIPROC; /* A Thumb label.  */
+
+/* ARM-specific values for sh_flags */
+const SHF_ARM_ENTRYSECT: u8 = 0x10000000; /* Section contains an entry point */
+const SHF_ARM_COMDEF: u8 = 0x0; /* Section may be multiply defined
+					      in the input to a link step.  */
+
+/* ARM-specific program header flags */
+const PF_ARM_SB: u8 = 0x0; /* Segment contains the location
+					      addressed by the static base. */
+const PF_ARM_PI: u8 = 0x0; /* Position-independent segment.  */
+const PF_ARM_ABS: u8 = 0x0; /* Absolute segment.  */
+
+/* Processor specific values for the Phdr p_u8 field.  */
+const PT_ARM_EXIDX: u32 = (PT_LOPROC + 1);	/* ARM unwind segment.  */
+
+/* Processor specific values for the Shdr sh_u8 field.  */
+const SHT_ARM_EXIDX: u32 = (SHT_LOPROC + 1); /* ARM unwind section.  */
+const SHT_ARM_PREEMPTMAP: u32 = (SHT_LOPROC + 2); /* Preemption details.  */
+const SHT_ARM_ATTRIBUTES: u32  = (SHT_LOPROC + 3); /* ARM attributes section.  */
+
+
+/* AArch64 relocs.  */
+
+const R_AARCH64_NONE: u8 = 0;	/* No relocation.  */
+
+/* ILP32 AArch64 relocs.  */
+const R_AARCH64_P32_ABS32: u8 = 1;	/* Direct 32 bit.  */
+const R_AARCH64_P32_COPY: u8 = 180;	/* Copy symbol at runtime.  */
+const R_AARCH64_P32_GLOB_DAT: u8 = 181;	/* Create GOT entry.  */
+const R_AARCH64_P32_JUMP_SLOT: u8 = 182;	/* Create PLT entry.  */
+const R_AARCH64_P32_RELATIVE: u8 = 183;	/* Adjust by program base.  */
+const R_AARCH64_P32_TLS_DTPMOD: u8 = 184;	/* Module number, 32 bit.  */
+const R_AARCH64_P32_TLS_DTPREL: u8 = 185;	/* Module-relative offset, 32 bit.  */
+const R_AARCH64_P32_TLS_TPREL: u8 = 186;	/* TP-relative offset, 32 bit.  */
+const R_AARCH64_P32_TLSDESC: u8 = 187;	/* TLS Descriptor.  */
+const R_AARCH64_P32_IRELATIVE: u8 = 188;	/* STT_GNU_IFUNC relocation. */
+
+/* LP64 AArch64 relocs.  */
+const R_AARCH64_ABS64: u8 = 257;	/* Direct 64 bit. */
+const R_AARCH64_ABS32: u8 = 258;	/* Direct 32 bit.  */
+const R_AARCH64_ABS16: u8 = 259;	/* Direct 16-bit.  */
+const R_AARCH64_PREL64: u8 = 260;	/* PC-relative 64-bit.	*/
+const R_AARCH64_PREL32: u8 = 261;	/* PC-relative 32-bit.	*/
+const R_AARCH64_PREL16: u8 = 262;	/* PC-relative 16-bit.	*/
+const R_AARCH64_MOVW_UABS_G0: u8 = 263;	/* Dir. MOVZ imm. from bits 15:0.  */
+const R_AARCH64_MOVW_UABS_G0_NC: u8 = 264;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_UABS_G1: u8 = 265;	/* Dir. MOVZ imm. from bits 31:16.  */
+const R_AARCH64_MOVW_UABS_G1_NC: u8 = 266;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_UABS_G2: u8 = 267;	/* Dir. MOVZ imm. from bits 47:32.  */
+const R_AARCH64_MOVW_UABS_G2_NC: u8 = 268;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_UABS_G3: u8 = 269;	/* Dir. MOV{K,Z} imm. from 63:48.  */
+const R_AARCH64_MOVW_SABS_G0: u8 = 270;	/* Dir. MOV{N,Z} imm. from 15:0.  */
+const R_AARCH64_MOVW_SABS_G1: u8 = 271;	/* Dir. MOV{N,Z} imm. from 31:16.  */
+const R_AARCH64_MOVW_SABS_G2: u8 = 272;	/* Dir. MOV{N,Z} imm. from 47:32.  */
+const R_AARCH64_LD_PREL_LO19: u8 = 273;	/* PC-rel. LD imm. from bits 20:2.  */
+const R_AARCH64_ADR_PREL_LO21: u8 = 274;	/* PC-rel. ADR imm. from bits 20:0.  */
+const R_AARCH64_ADR_PREL_PG_HI21: u8 = 275;	/* Page-rel. ADRP imm. from 32:12.  */
+const R_AARCH64_ADR_PREL_PG_HI21_NC: u8 = 276; /* Likewise; no overflow check.  */
+const R_AARCH64_ADD_ABS_LO12_NC: u8 = 277;	/* Dir. ADD imm. from bits 11:0.  */
+const R_AARCH64_LDST8_ABS_LO12_NC: u8 = 278;	/* Likewise for LD/ST; no check. */
+const R_AARCH64_TSTBR14: u8 = 279;	/* PC-rel. TBZ/TBNZ imm. from 15:2.  */
+const R_AARCH64_CONDBR19: u8 = 280;	/* PC-rel. cond. br. imm. from 20:2. */
+const R_AARCH64_JUMP26: u8 = 282;	/* PC-rel. B imm. from bits 27:2.  */
+const R_AARCH64_CALL26: u8 = 283;	/* Likewise for CALL.  */
+const R_AARCH64_LDST16_ABS_LO12_NC: u8 = 284; /* Dir. ADD imm. from bits 11:1.  */
+const R_AARCH64_LDST32_ABS_LO12_NC: u8 = 285; /* Likewise for bits 11:2.  */
+const R_AARCH64_LDST64_ABS_LO12_NC: u8 = 286; /* Likewise for bits 11:3.  */
+const R_AARCH64_MOVW_PREL_G0: u8 = 287;	/* PC-rel. MOV{N,Z} imm. from 15:0.  */
+const R_AARCH64_MOVW_PREL_G0_NC: u8 = 288;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_PREL_G1: u8 = 289;	/* PC-rel. MOV{N,Z} imm. from 31:16. */
+const R_AARCH64_MOVW_PREL_G1_NC: u8 = 290;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_PREL_G2: u8 = 291;	/* PC-rel. MOV{N,Z} imm. from 47:32. */
+const R_AARCH64_MOVW_PREL_G2_NC: u8 = 292;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_PREL_G3: u8 = 293;	/* PC-rel. MOV{N,Z} imm. from 63:48. */
+const R_AARCH64_LDST128_ABS_LO12_NC: u8 = 299; /* Dir. ADD imm. from bits 11:4.  */
+const R_AARCH64_MOVW_GOTOFF_G0: u8 = 300;	/* GOT-rel. off. MOV{N,Z} imm. 15:0. */
+const R_AARCH64_MOVW_GOTOFF_G0_NC: u8 = 301;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_GOTOFF_G1: u8 = 302;	/* GOT-rel. o. MOV{N,Z} imm. 31:16.  */
+const R_AARCH64_MOVW_GOTOFF_G1_NC: u8 = 303;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_GOTOFF_G2: u8 = 304;	/* GOT-rel. o. MOV{N,Z} imm. 47:32.  */
+const R_AARCH64_MOVW_GOTOFF_G2_NC: u8 = 305;	/* Likewise for MOVK; no check.  */
+const R_AARCH64_MOVW_GOTOFF_G3: u8 = 306;	/* GOT-rel. o. MOV{N,Z} imm. 63:48.  */
+const R_AARCH64_GOTREL64: u8 = 307;	/* GOT-relative 64-bit.  */
+const R_AARCH64_GOTREL32: u8 = 308;	/* GOT-relative 32-bit.  */
+const R_AARCH64_GOT_LD_PREL19: u8 = 309;	/* PC-rel. GOT off. load imm. 20:2.  */
+const R_AARCH64_LD64_GOTOFF_LO15: u8 = 310;	/* GOT-rel. off. LD/ST imm. 14:3.  */
+const R_AARCH64_ADR_GOT_PAGE: u8 = 311;	/* P-page-rel. GOT off. ADRP 32:12.  */
+const R_AARCH64_LD64_GOT_LO12_NC: u8 = 312;	/* Dir. GOT off. LD/ST imm. 11:3.  */
+const R_AARCH64_LD64_GOTPAGE_LO15: u8 = 313;	/* GOT-page-rel. GOT off. LD/ST 14:3 */
+const R_AARCH64_TLSGD_ADR_PREL21: u8 = 512;	/* PC-relative ADR imm. 20:0.  */
+const R_AARCH64_TLSGD_ADR_PAGE21: u8 = 513;	/* page-rel. ADRP imm. 32:12.  */
+const R_AARCH64_TLSGD_ADD_LO12_NC: u8 = 514;	/* direct ADD imm. from 11:0.  */
+const R_AARCH64_TLSGD_MOVW_G1: u8 = 515;	/* GOT-rel. MOV{N,Z} 31:16.  */
+const R_AARCH64_TLSGD_MOVW_G0_NC: u8 = 516;	/* GOT-rel. MOVK imm. 15:0.  */
+const R_AARCH64_TLSLD_ADR_PREL21: u8 = 517;	/* Like 512; local dynamic model.  */
+const R_AARCH64_TLSLD_ADR_PAGE21: u8 = 518;	/* Like 513; local dynamic model.  */
+const R_AARCH64_TLSLD_ADD_LO12_NC: u8 = 519;	/* Like 514; local dynamic model.  */
+const R_AARCH64_TLSLD_MOVW_G1: u8 = 520;	/* Like 515; local dynamic model.  */
+const R_AARCH64_TLSLD_MOVW_G0_NC: u8 = 521;	/* Like 516; local dynamic model.  */
+const R_AARCH64_TLSLD_LD_PREL19: u8 = 522;	/* TLS PC-rel. load imm. 20:2.  */
+const R_AARCH64_TLSLD_MOVW_DTPREL_G2: u8 = 523; /* TLS DTP-rel. MOV{N,Z} 47:32.  */
+const R_AARCH64_TLSLD_MOVW_DTPREL_G1: u8 = 524; /* TLS DTP-rel. MOV{N,Z} 31:16.  */
+const R_AARCH64_TLSLD_MOVW_DTPREL_G1_NC: u8 = 525; /* Likewise; MOVK; no check.  */
+const R_AARCH64_TLSLD_MOVW_DTPREL_G0: u8 = 526; /* TLS DTP-rel. MOV{N,Z} 15:0.  */
+const R_AARCH64_TLSLD_MOVW_DTPREL_G0_NC: u8 = 527; /* Likewise; MOVK; no check.  */
+const R_AARCH64_TLSLD_ADD_DTPREL_HI12: u8 = 528; /* DTP-rel. ADD imm. from 23:12. */
+const R_AARCH64_TLSLD_ADD_DTPREL_LO12: u8 = 529; /* DTP-rel. ADD imm. from 11:0.  */
+const R_AARCH64_TLSLD_ADD_DTPREL_LO12_NC: u8 = 530; /* Likewise; no ovfl. check.  */
+const R_AARCH64_TLSLD_LDST8_DTPREL_LO12: u8 = 531; /* DTP-rel. LD/ST imm. 11:0.  */
+const R_AARCH64_TLSLD_LDST8_DTPREL_LO12_NC: u8 = 532; /* Likewise; no check.  */
+const R_AARCH64_TLSLD_LDST16_DTPREL_LO12: u8 = 533; /* DTP-rel. LD/ST imm. 11:1.  */
+const R_AARCH64_TLSLD_LDST16_DTPREL_LO12_NC: u8 = 534; /* Likewise; no check.  */
+const R_AARCH64_TLSLD_LDST32_DTPREL_LO12: u8 = 535; /* DTP-rel. LD/ST imm. 11:2.  */
+const R_AARCH64_TLSLD_LDST32_DTPREL_LO12_NC: u8 = 536; /* Likewise; no check.  */
+const R_AARCH64_TLSLD_LDST64_DTPREL_LO12: u8 = 537; /* DTP-rel. LD/ST imm. 11:3.  */
+const R_AARCH64_TLSLD_LDST64_DTPREL_LO12_NC: u8 = 538; /* Likewise; no check.  */
+const R_AARCH64_TLSIE_MOVW_GOTTPREL_G1: u8 = 539; /* GOT-rel. MOV{N,Z} 31:16.  */
+const R_AARCH64_TLSIE_MOVW_GOTTPREL_G0_NC: u8 = 540; /* GOT-rel. MOVK 15:0.  */
+const R_AARCH64_TLSIE_ADR_GOTTPREL_PAGE21: u8 = 541; /* Page-rel. ADRP 32:12.  */
+const R_AARCH64_TLSIE_LD64_GOTTPREL_LO12_NC: u8 = 542; /* Direct LD off. 11:3.  */
+const R_AARCH64_TLSIE_LD_GOTTPREL_PREL19: u8 = 543; /* PC-rel. load imm. 20:2.  */
+const R_AARCH64_TLSLE_MOVW_TPREL_G2: u8 = 544; /* TLS TP-rel. MOV{N,Z} 47:32.  */
+const R_AARCH64_TLSLE_MOVW_TPREL_G1: u8 = 545; /* TLS TP-rel. MOV{N,Z} 31:16.  */
+const R_AARCH64_TLSLE_MOVW_TPREL_G1_NC: u8 = 546; /* Likewise; MOVK; no check.  */
+const R_AARCH64_TLSLE_MOVW_TPREL_G0: u8 = 547; /* TLS TP-rel. MOV{N,Z} 15:0.  */
+const R_AARCH64_TLSLE_MOVW_TPREL_G0_NC: u8 = 548; /* Likewise; MOVK; no check.  */
+const R_AARCH64_TLSLE_ADD_TPREL_HI12: u8 = 549; /* TP-rel. ADD imm. 23:12.  */
+const R_AARCH64_TLSLE_ADD_TPREL_LO12: u8 = 550; /* TP-rel. ADD imm. 11:0.  */
+const R_AARCH64_TLSLE_ADD_TPREL_LO12_NC: u8 = 551; /* Likewise; no ovfl. check.  */
+const R_AARCH64_TLSLE_LDST8_TPREL_LO12: u8 = 552; /* TP-rel. LD/ST off. 11:0.  */
+const R_AARCH64_TLSLE_LDST8_TPREL_LO12_NC: u8 = 553; /* Likewise; no ovfl. check. */
+const R_AARCH64_TLSLE_LDST16_TPREL_LO12: u8 = 554; /* TP-rel. LD/ST off. 11:1.  */
+const R_AARCH64_TLSLE_LDST16_TPREL_LO12_NC: u8 = 555; /* Likewise; no check.  */
+const R_AARCH64_TLSLE_LDST32_TPREL_LO12: u8 = 556; /* TP-rel. LD/ST off. 11:2.  */
+const R_AARCH64_TLSLE_LDST32_TPREL_LO12_NC: u8 = 557; /* Likewise; no check.  */
+const R_AARCH64_TLSLE_LDST64_TPREL_LO12: u8 = 558; /* TP-rel. LD/ST off. 11:3.  */
+const R_AARCH64_TLSLE_LDST64_TPREL_LO12_NC: u8 = 559; /* Likewise; no check.  */
+const R_AARCH64_TLSDESC_LD_PREL19: u8 = 560;	/* PC-rel. load immediate 20:2.  */
+const R_AARCH64_TLSDESC_ADR_PREL21: u8 = 561; /* PC-rel. ADR immediate 20:0.  */
+const R_AARCH64_TLSDESC_ADR_PAGE21: u8 = 562; /* Page-rel. ADRP imm. 32:12.  */
+const R_AARCH64_TLSDESC_LD64_LO12: u8 = 563;	/* Direct LD off. from 11:3.  */
+const R_AARCH64_TLSDESC_ADD_LO12: u8 = 564;	/* Direct ADD imm. from 11:0.  */
+const R_AARCH64_TLSDESC_OFF_G1: u8 = 565;	/* GOT-rel. MOV{N,Z} imm. 31:16.  */
+const R_AARCH64_TLSDESC_OFF_G0_NC: u8 = 566;	/* GOT-rel. MOVK imm. 15:0; no ck.  */
+const R_AARCH64_TLSDESC_LDR: u8 = 567;	/* Relax LDR.  */
+const R_AARCH64_TLSDESC_ADD: u8 = 568;	/* Relax ADD.  */
+const R_AARCH64_TLSDESC_CALL: u8 = 569;	/* Relax BLR.  */
+const R_AARCH64_TLSLE_LDST128_TPREL_LO12: u8 = 570; /* TP-rel. LD/ST off. 11:4.  */
+const R_AARCH64_TLSLE_LDST128_TPREL_LO12_NC: u8 = 571; /* Likewise; no check.  */
+const R_AARCH64_TLSLD_LDST128_DTPREL_LO12: u8 = 572; /* DTP-rel. LD/ST imm. 11:4. */
+const R_AARCH64_TLSLD_LDST128_DTPREL_LO12_NC: u8 = 573; /* Likewise; no check.  */
+const R_AARCH64_COPY: u8 = 1024;	/* Copy symbol at runtime.  */
+const R_AARCH64_GLOB_DAT: u8 = 1025;	/* Create GOT entry.  */
+const R_AARCH64_JUMP_SLOT: u8 = 1026;	/* Create PLT entry.  */
+const R_AARCH64_RELATIVE: u8 = 1027;	/* Adjust by program base.  */
+const R_AARCH64_TLS_DTPMOD: u8 = 1028;	/* Module number, 64 bit.  */
+const R_AARCH64_TLS_DTPREL: u8 = 1029;	/* Module-relative offset, 64 bit.  */
+const R_AARCH64_TLS_TPREL: u8 = 1030;	/* TP-relative offset, 64 bit.  */
+const R_AARCH64_TLSDESC: u8 = 1031;	/* TLS Descriptor.  */
+const R_AARCH64_IRELATIVE: u8 = 1032;	/* STT_GNU_IFUNC relocation.  */
+
+/* AArch64 specific values for the Dyn d_tag field.  */
+const DT_AARCH64_BTI_PLT: u8 = (DT_LOPROC + 1);
+const DT_AARCH64_PAC_PLT: u8 = (DT_LOPROC + 3);
+const DT_AARCH64_VARIANT_PCS: u8 = (DT_LOPROC + 5);
+const DT_AARCH64_NUM: u8 = 6;
+
+/* AArch64 specific values for the st_other field.  */
+const STO_AARCH64_VARIANT_PCS: u8 = 0x0;
+
+/* ARM relocs.  */
+
+const R_ARM_NONE: u8 = 0;	/* No reloc */
+const R_ARM_PC24: u8 = 1;	/* Deprecated PC relative 26
+					   bit branch.  */
+const R_ARM_ABS32: u8 = 2;	/* Direct 32 bit  */
+const R_ARM_REL32: u8 = 3;	/* PC relative 32 bit */
+const R_ARM_PC13: u8 = 4;
+const R_ARM_ABS16: u8 = 5;	/* Direct 16 bit */
+const R_ARM_ABS12: u8 = 6;	/* Direct 12 bit */
+const R_ARM_THM_ABS5: u8 = 7;	/* Direct & 0x7C (LDR, STR).  */
+const R_ARM_ABS8: u8 = 8;	/* Direct 8 bit */
+const R_ARM_SBREL32: u8 = 9;
+const R_ARM_THM_PC22: u8 = 10;	/* PC relative 24 bit (Thumb32 BL).  */
+const R_ARM_THM_PC8: u8 = 11;	/* PC relative & 0x3FC
+					   (Thumb16 LDR, ADD, ADR).  */
+const R_ARM_AMP_VCALL9: u8 = 12;
+const R_ARM_SWI24: u8 = 13;	/* Obsolete static relocation.  */
+const R_ARM_TLS_DESC: u8 = 13;      /* Dynamic relocation.  */
+const R_ARM_THM_SWI8: u8 = 14;	/* Reserved.  */
+const R_ARM_XPC25: u8 = 15;	/* Reserved.  */
+const R_ARM_THM_XPC22: u8 = 16;	/* Reserved.  */
+const R_ARM_TLS_DTPMOD32: u8 = 17;	/* ID of module containing symbol */
+const R_ARM_TLS_DTPOFF32: u8 = 18;	/* Offset in TLS block */
+const R_ARM_TLS_TPOFF32: u8 = 19;	/* Offset in static TLS block */
+const R_ARM_COPY: u8 = 20;	/* Copy symbol at runtime */
+const R_ARM_GLOB_DAT: u8 = 21;	/* Create GOT entry */
+const R_ARM_JUMP_SLOT: u8 = 22;	/* Create PLT entry */
+const R_ARM_RELATIVE: u8 = 23;	/* Adjust by program base */
+const R_ARM_GOTOFF: u8 = 24;	/* 32 bit offset to GOT */
+const R_ARM_GOTPC: u8 = 25;	/* 32 bit PC relative offset to GOT */
+const R_ARM_GOT32: u8 = 26;	/* 32 bit GOT entry */
+const R_ARM_PLT32: u8 = 27;	/* Deprecated, 32 bit PLT address.  */
+const R_ARM_CALL: u8 = 28;	/* PC relative 24 bit (BL, BLX).  */
+const R_ARM_JUMP24: u8 = 29;	/* PC relative 24 bit
+					   (B, BL<cond>).  */
+const R_ARM_THM_JUMP24: u8 = 30;	/* PC relative 24 bit (Thumb32 B.W).  */
+const R_ARM_BASE_ABS: u8 = 31;	/* Adjust by program base.  */
+const R_ARM_ALU_PCREL_7_0: u8 = 32;	/* Obsolete.  */
+const R_ARM_ALU_PCREL_15_8: u8 = 33;	/* Obsolete.  */
+const R_ARM_ALU_PCREL_23_15: u8 = 34;	/* Obsolete.  */
+const R_ARM_LDR_SBREL_11_0: u8 = 35;	/* Deprecated, prog. base relative.  */
+const R_ARM_ALU_SBREL_19_12: u8 = 36;	/* Deprecated, prog. base relative.  */
+const R_ARM_ALU_SBREL_27_20: u8 = 37;	/* Deprecated, prog. base relative.  */
+const R_ARM_TARGET1: u8 = 38;
+const R_ARM_SBREL31: u8 = 39;	/* Program base relative.  */
+const R_ARM_V4BX: u8 = 40;
+const R_ARM_TARGET2: u8 = 41;
+const R_ARM_PREL31: u8 = 42;	/* 32 bit PC relative.  */
+const R_ARM_MOVW_ABS_NC: u8 = 43;	/* Direct 16-bit (MOVW).  */
+const R_ARM_MOVT_ABS: u8 = 44;	/* Direct high 16-bit (MOVT).  */
+const R_ARM_MOVW_PREL_NC: u8 = 45;	/* PC relative 16-bit (MOVW).  */
+const R_ARM_MOVT_PREL: u8 = 46;	/* PC relative (MOVT).  */
+const R_ARM_THM_MOVW_ABS_NC: u8 = 47;	/* Direct 16 bit (Thumb32 MOVW).  */
+const R_ARM_THM_MOVT_ABS: u8 = 48;	/* Direct high 16 bit
+					   (Thumb32 MOVT).  */
+const R_ARM_THM_MOVW_PREL_NC: u8 = 49;	/* PC relative 16 bit
+					   (Thumb32 MOVW).  */
+const R_ARM_THM_MOVT_PREL: u8 = 50;	/* PC relative high 16 bit
+					   (Thumb32 MOVT).  */
+const R_ARM_THM_JUMP19: u8 = 51;	/* PC relative 20 bit
+					   (Thumb32 B<cond>.W).  */
+const R_ARM_THM_JUMP6: u8 = 52;	/* PC relative X & 0x7E
+					   (Thumb16 CBZ, CBNZ).  */
+const R_ARM_THM_ALU_PREL_11_0: u8 = 53;	/* PC relative 12 bit
+					   (Thumb32 ADR.W).  */
+const R_ARM_THM_PC12: u8 = 54;	/* PC relative 12 bit
+					   (Thumb32 LDR{D,SB,H,SH}).  */
+const R_ARM_ABS32_NOI: u8 = 55;	/* Direct 32-bit.  */
+const R_ARM_REL32_NOI: u8 = 56;	/* PC relative 32-bit.  */
+const R_ARM_ALU_PC_G0_NC: u8 = 57;	/* PC relative (ADD, SUB).  */
+const R_ARM_ALU_PC_G0: u8 = 58;	/* PC relative (ADD, SUB).  */
+const R_ARM_ALU_PC_G1_NC: u8 = 59;	/* PC relative (ADD, SUB).  */
+const R_ARM_ALU_PC_G1: u8 = 60;	/* PC relative (ADD, SUB).  */
+const R_ARM_ALU_PC_G2: u8 = 61;	/* PC relative (ADD, SUB).  */
+const R_ARM_LDR_PC_G1: u8 = 62;	/* PC relative (LDR,STR,LDRB,STRB).  */
+const R_ARM_LDR_PC_G2: u8 = 63;	/* PC relative (LDR,STR,LDRB,STRB).  */
+const R_ARM_LDRS_PC_G0: u8 = 64;	/* PC relative (STR{D,H},
+					   LDR{D,SB,H,SH}).  */
+const R_ARM_LDRS_PC_G1: u8 = 65;	/* PC relative (STR{D,H},
+					   LDR{D,SB,H,SH}).  */
+const R_ARM_LDRS_PC_G2: u8 = 66;	/* PC relative (STR{D,H},
+					   LDR{D,SB,H,SH}).  */
+const R_ARM_LDC_PC_G0: u8 = 67;	/* PC relative (LDC, STC).  */
+const R_ARM_LDC_PC_G1: u8 = 68;	/* PC relative (LDC, STC).  */
+const R_ARM_LDC_PC_G2: u8 = 69;	/* PC relative (LDC, STC).  */
+const R_ARM_ALU_SB_G0_NC: u8 = 70;	/* Program base relative (ADD,SUB).  */
+const R_ARM_ALU_SB_G0: u8 = 71;	/* Program base relative (ADD,SUB).  */
+const R_ARM_ALU_SB_G1_NC: u8 = 72;	/* Program base relative (ADD,SUB).  */
+const R_ARM_ALU_SB_G1: u8 = 73;	/* Program base relative (ADD,SUB).  */
+const R_ARM_ALU_SB_G2: u8 = 74;	/* Program base relative (ADD,SUB).  */
+const R_ARM_LDR_SB_G0: u8 = 75;	/* Program base relative (LDR,
+					   STR, LDRB, STRB).  */
+const R_ARM_LDR_SB_G1: u8 = 76;	/* Program base relative
+					   (LDR, STR, LDRB, STRB).  */
+const R_ARM_LDR_SB_G2: u8 = 77;	/* Program base relative
+					   (LDR, STR, LDRB, STRB).  */
+const R_ARM_LDRS_SB_G0: u8 = 78;	/* Program base relative
+					   (LDR, STR, LDRB, STRB).  */
+const R_ARM_LDRS_SB_G1: u8 = 79;	/* Program base relative
+					   (LDR, STR, LDRB, STRB).  */
+const R_ARM_LDRS_SB_G2: u8 = 80;	/* Program base relative
+					   (LDR, STR, LDRB, STRB).  */
+const R_ARM_LDC_SB_G0: u8 = 81;	/* Program base relative (LDC,STC).  */
+const R_ARM_LDC_SB_G1: u8 = 82;	/* Program base relative (LDC,STC).  */
+const R_ARM_LDC_SB_G2: u8 = 83;	/* Program base relative (LDC,STC).  */
+const R_ARM_MOVW_BREL_NC: u8 = 84;	/* Program base relative 16
+					   bit (MOVW).  */
+const R_ARM_MOVT_BREL: u8 = 85;	/* Program base relative high
+					   16 bit (MOVT).  */
+const R_ARM_MOVW_BREL: u8 = 86;	/* Program base relative 16
+					   bit (MOVW).  */
+const R_ARM_THM_MOVW_BREL_NC: u8 = 87;	/* Program base relative 16
+					   bit (Thumb32 MOVW).  */
+const R_ARM_THM_MOVT_BREL: u8 = 88;	/* Program base relative high
+					   16 bit (Thumb32 MOVT).  */
+const R_ARM_THM_MOVW_BREL: u8 = 89;	/* Program base relative 16
+					   bit (Thumb32 MOVW).  */
+const R_ARM_TLS_GOTDESC: u8 = 90;
+const R_ARM_TLS_CALL: u8 = 91;
+const R_ARM_TLS_DESCSEQ: u8 = 92;	/* TLS relaxation.  */
+const R_ARM_THM_TLS_CALL: u8 = 93;
+const R_ARM_PLT32_ABS: u8 = 94;
+const R_ARM_GOT_ABS: u8 = 95;	/* GOT entry.  */
+const R_ARM_GOT_PREL: u8 = 96;	/* PC relative GOT entry.  */
+const R_ARM_GOT_BREL12: u8 = 97;	/* GOT entry relative to GOT
+					   origin (LDR).  */
+const R_ARM_GOTOFF12: u8 = 98;	/* 12 bit, GOT entry relative
+					   to GOT origin (LDR, STR).  */
+const R_ARM_GOTRELAX: u8 = 99;
+const R_ARM_GNU_VTENTRY: u8 = 100;
+const R_ARM_GNU_VTINHERIT: u8 = 101;
+const R_ARM_THM_PC11: u8 = 102;	/* PC relative & 0xFFE (Thumb16 B).  */
+const R_ARM_THM_PC9: u8 = 103;	/* PC relative & 0x1FE
+					   (Thumb16 B/B<cond>).  */
+const R_ARM_TLS_GD32: u8 = 104;	/* PC-rel 32 bit for global dynamic
+					   thread local data */
+const R_ARM_TLS_LDM32: u8 = 105;	/* PC-rel 32 bit for local dynamic
+					   thread local data */
+const R_ARM_TLS_LDO32: u8 = 106;	/* 32 bit offset relative to TLS
+					   block */
+const R_ARM_TLS_IE32: u8 = 107;	/* PC-rel 32 bit for GOT entry of
+					   static TLS block offset */
+const R_ARM_TLS_LE32: u8 = 108;	/* 32 bit offset relative to static
+					   TLS block */
+const R_ARM_TLS_LDO12: u8 = 109;	/* 12 bit relative to TLS
+					   block (LDR, STR).  */
+const R_ARM_TLS_LE12: u8 = 110;	/* 12 bit relative to static
+					   TLS block (LDR, STR).  */
+const R_ARM_TLS_IE12GP: u8 = 111;	/* 12 bit GOT entry relative
+					   to GOT origin (LDR).  */
+const R_ARM_ME_TOO: u8 = 128;	/* Obsolete.  */
+const R_ARM_THM_TLS_DESCSEQ: u8 = 129;
+const R_ARM_THM_TLS_DESCSEQ16: u8 = 129;
+const R_ARM_THM_TLS_DESCSEQ32: u8 = 130;
+const R_ARM_THM_GOT_BREL12: u8 = 131;	/* GOT entry relative to GOT
+					   origin, 12 bit (Thumb32 LDR).  */
+const R_ARM_IRELATIVE: u8 = 160;
+const R_ARM_RXPC25: u8 = 249;
+const R_ARM_RSBREL32: u8 = 250;
+const R_ARM_THM_RPC22: u8 = 251;
+const R_ARM_RREL32: u8 = 252;
+const R_ARM_RABS22: u8 = 253;
+const R_ARM_RPC24: u8 = 254;
+const R_ARM_RBASE: u8 = 255;
+/* Keep this the last entry.  */
+const R_ARM_NUM: u8 = 256;
+
+/* C-SKY */
+const R_CKCORE_NONE: u8 = 0;	/* no reloc */
+const R_CKCORE_ADDR32: u8 = 1;	/* direct 32 bit (S + A) */
+const R_CKCORE_PCRELIMM8BY4: u8 = 2;	/* disp ((S + A - P) >> 2) & 0xff   */
+const R_CKCORE_PCRELIMM11BY2: u8 = 3;	/* disp ((S + A - P) >> 1) & 0x7ff  */
+const R_CKCORE_PCREL32: u8 = 5;	/* 32-bit rel (S + A - P)           */
+const R_CKCORE_PCRELJSR_IMM11BY2: u8 = 6;	/* disp ((S + A - P) >>1) & 0x7ff   */
+const R_CKCORE_RELATIVE: u8 = 9;	/* 32 bit adjust program base(B + A)*/
+const R_CKCORE_COPY: u8 = 10;	/* 32 bit adjust by program base    */
+const R_CKCORE_GLOB_DAT: u8 = 11;	/* off between got and sym (S)      */
+const R_CKCORE_JUMP_SLOT: u8 = 12;	/* PLT entry (S) */
+const R_CKCORE_GOTOFF: u8 = 13;	/* offset to GOT (S + A - GOT)      */
+const R_CKCORE_GOTPC: u8 = 14;	/* PC offset to GOT (GOT + A - P)   */
+const R_CKCORE_GOT32: u8 = 15;	/* 32 bit GOT entry (G) */
+const R_CKCORE_PLT32: u8 = 16;	/* 32 bit PLT entry (G) */
+const R_CKCORE_ADDRGOT: u8 = 17;	/* GOT entry in GLOB_DAT (GOT + G)  */
+const R_CKCORE_ADDRPLT: u8 = 18;	/* PLT entry in GLOB_DAT (GOT + G)  */
+const R_CKCORE_PCREL_IMM26BY2: u8 = 19;	/* ((S + A - P) >> 1) & 0x3ffffff   */
+const R_CKCORE_PCREL_IMM16BY2: u8 = 20;	/* disp ((S + A - P) >> 1) & 0xffff */
+const R_CKCORE_PCREL_IMM16BY4: u8 = 21;	/* disp ((S + A - P) >> 2) & 0xffff */
+const R_CKCORE_PCREL_IMM10BY2: u8 = 22;	/* disp ((S + A - P) >> 1) & 0x3ff  */
+const R_CKCORE_PCREL_IMM10BY4: u8 = 23;	/* disp ((S + A - P) >> 2) & 0x3ff  */
+const R_CKCORE_ADDR_HI16: u8 = 24;	/* high & low 16 bit ADDR */
+                                        /* ((S + A) >> 16) & 0xffff */
+const R_CKCORE_ADDR_LO16: u8 = 25;	/* (S + A) & 0xffff */
+const R_CKCORE_GOTPC_HI16: u8 = 26;	/* high & low 16 bit GOTPC */
+                                        /* ((GOT + A - P) >> 16) & 0xffff */
+const R_CKCORE_GOTPC_LO16: u8 = 27;	/* (GOT + A - P) & 0xffff */
+const R_CKCORE_GOTOFF_HI16: u8 = 28;	/* high & low 16 bit GOTOFF */
+                                        /* ((S + A - GOT) >> 16) & 0xffff */
+const R_CKCORE_GOTOFF_LO16: u8 = 29;	/* (S + A - GOT) & 0xffff */
+const R_CKCORE_GOT12: u8 = 30;	/* 12 bit disp GOT entry (G) */
+const R_CKCORE_GOT_HI16: u8 = 31;	/* high & low 16 bit GOT */
+                                        /* (G >> 16) & 0xffff */
+const R_CKCORE_GOT_LO16: u8 = 32;	/* (G & 0xffff) */
+const R_CKCORE_PLT12: u8 = 33;	/* 12 bit disp PLT entry (G) */
+const R_CKCORE_PLT_HI16: u8 = 34;	/* high & low 16 bit PLT */
+                                        /* (G >> 16) & 0xffff */
+const R_CKCORE_PLT_LO16: u8 = 35;	/* G & 0xffff */
+const R_CKCORE_ADDRGOT_HI16: u8 = 36;	/* high & low 16 bit ADDRGOT */
+                                        /* (GOT + G * 4) & 0xffff */
+const R_CKCORE_ADDRGOT_LO16: u8 = 37;	/* (GOT + G * 4) & 0xffff */
+const R_CKCORE_ADDRPLT_HI16: u8 = 38;	/* high & low 16 bit ADDRPLT */
+                                        /* ((GOT + G * 4) >> 16) & 0xFFFF */
+const R_CKCORE_ADDRPLT_LO16: u8 = 39;	/* (GOT+G*4) & 0xffff */
+const R_CKCORE_PCREL_JSR_IMM26BY2: u8 = 40;	/* disp ((S+A-P) >>1) & x3ffffff */
+const R_CKCORE_TOFFSET_LO16: u8 = 41;	/* (S+A-BTEXT) & 0xffff */
+const R_CKCORE_DOFFSET_LO16: u8 = 42;	/* (S+A-BTEXT) & 0xffff */
+const R_CKCORE_PCREL_IMM18BY2: u8 = 43;	/* disp ((S+A-P) >>1) & 0x3ffff */
+const R_CKCORE_DOFFSET_IMM18: u8 = 44;	/* disp (S+A-BDATA) & 0x3ffff */
+const R_CKCORE_DOFFSET_IMM18BY2: u8 = 45;	/* disp ((S+A-BDATA)>>1) & 0x3ffff */
+const R_CKCORE_DOFFSET_IMM18BY4: u8 = 46;	/* disp ((S+A-BDATA)>>2) & 0x3ffff */
+const R_CKCORE_GOT_IMM18BY4: u8 = 48;	/* disp (G >> 2) */
+const R_CKCORE_PLT_IMM18BY4: u8 = 49;	/* disp (G >> 2) */
+const R_CKCORE_PCREL_IMM7BY4: u8 = 50;	/* disp ((S+A-P) >>2) & 0x7f */
+const R_CKCORE_TLS_LE32: u8 = 51;	/* 32 bit offset to TLS block */
+const R_CKCORE_TLS_IE32: u8 = 52;
+const R_CKCORE_TLS_GD32: u8 = 53;
+const R_CKCORE_TLS_LDM32: u8 = 54;
+const R_CKCORE_TLS_LDO32: u8 = 55;
+const R_CKCORE_TLS_DTPMOD32: u8 = 56;
+const R_CKCORE_TLS_DTPOFF32: u8 = 57;
+const R_CKCORE_TLS_TPOFF32: u8 = 58;
+
+/* C-SKY elf header definition.  */
+const EF_CSKY_ABIMASK: u8 = 0xF0000000;
+const EF_CSKY_OTHER: u8 = 0x0FFF0000;
+const EF_CSKY_PROCESSOR: u8 = 0x0000FFFF;
+
+const EF_CSKY_ABIV1: u8 = 0x10000000;
+const EF_CSKY_ABIV2: u8 = 0x20000000;
+
+/* C-SKY attributes section.  */
+const SHT_CSKY_ATTRIBUTES: u32 = (SHT_LOPROC + 1);
+
+/* IA-64 specific declarations.  */
+
+/* Processor specific flags for the Ehdr e_flags field.  */
+const EF_IA_64_MASKOS: u8 = 0xf;	/* os-specific flags */
+const EF_IA_64_ABI64: u8 = 0x0;	/* 64-bit ABI */
+const EF_IA_64_ARCH: u8 = 0x0;	/* arch. version mask */
+
+/* Processor specific values for the Phdr p_u8 field.  */
+const PT_IA_64_ARCHEXT: u32 = (PT_LOPROC + 0);	/* arch extension bits */
+const PT_IA_64_UNWIND: u32 = (PT_LOPROC + 1);	/* ia64 unwind bits */
+const PT_IA_64_HP_OPT_ANOT: u32 = (PT_LOOS + 0x12);
+const PT_IA_64_HP_HSL_ANOT: u32 = (PT_LOOS + 0x13);
+const PT_IA_64_HP_STACK: u32 = (PT_LOOS + 0x14);
+
+/* Processor specific flags for the Phdr p_flags field.  */
+const PF_IA_64_NORECOV: u8 = 0x0;	/* spec insns w/o recovery */
+
+/* Processor specific values for the Shdr sh_u8 field.  */
+const SHT_IA_64_EXT: u32 = (SHT_LOPROC + 0); /* extension bits */
+const SHT_IA_64_UNWIND: u32 = (SHT_LOPROC + 1); /* unwind bits */
+
+/* Processor specific flags for the Shdr sh_flags field.  */
+const SHF_IA_64_SHORT: u8 = 0x0;	/* section near gp */
+const SHF_IA_64_NORECOV: u8 = 0x0;	/* spec insns w/o recovery */
+
+/* Processor specific values for the Dyn d_tag field.  */
+const DT_IA_64_PLT_RESERVE: u8 = (DT_LOPROC + 0);
+const DT_IA_64_NUM: u8 = 1;
+
+/* IA-64 relocations.  */
+const R_IA64_NONE: u8 = 0x0;	/* none */
+const R_IA64_IMM14: u8 = 0x1;	/* symbol + addend, add imm14 */
+const R_IA64_IMM22: u8 = 0x2;	/* symbol + addend, add imm22 */
+const R_IA64_IMM64: u8 = 0x3;	/* symbol + addend, mov imm64 */
+const R_IA64_DIR32MSB: u8 = 0x4;	/* symbol + addend, data4 MSB */
+const R_IA64_DIR32LSB: u8 = 0x5;	/* symbol + addend, data4 LSB */
+const R_IA64_DIR64MSB: u8 = 0x6;	/* symbol + addend, data8 MSB */
+const R_IA64_DIR64LSB: u8 = 0x7;	/* symbol + addend, data8 LSB */
+const R_IA64_GPREL22: u8 = 0xa;	/* @gprel(sym + add), add imm22 */
+const R_IA64_GPREL64I: u8 = 0xb;	/* @gprel(sym + add), mov imm64 */
+const R_IA64_GPREL32MSB: u8 = 0xc;	/* @gprel(sym + add), data4 MSB */
+const R_IA64_GPREL32LSB: u8 = 0xd;	/* @gprel(sym + add), data4 LSB */
+const R_IA64_GPREL64MSB: u8 = 0xe;	/* @gprel(sym + add), data8 MSB */
+const R_IA64_GPREL64LSB: u8 = 0xf;	/* @gprel(sym + add), data8 LSB */
+const R_IA64_LTOFF22: u8 = 0x2;	/* @ltoff(sym + add), add imm22 */
+const R_IA64_LTOFF64I: u8 = 0x3;	/* @ltoff(sym + add), mov imm64 */
+const R_IA64_PLTOFF22: u8 = 0xa;	/* @pltoff(sym + add), add imm22 */
+const R_IA64_PLTOFF64I: u8 = 0xb;	/* @pltoff(sym + add), mov imm64 */
+const R_IA64_PLTOFF64MSB: u8 = 0xe;	/* @pltoff(sym + add), data8 MSB */
+const R_IA64_PLTOFF64LSB: u8 = 0xf;	/* @pltoff(sym + add), data8 LSB */
+const R_IA64_FPTR64I: u8 = 0x3;	/* @fptr(sym + add), mov imm64 */
+const R_IA64_FPTR32MSB: u8 = 0x4;	/* @fptr(sym + add), data4 MSB */
+const R_IA64_FPTR32LSB: u8 = 0x5;	/* @fptr(sym + add), data4 LSB */
+const R_IA64_FPTR64MSB: u8 = 0x6;	/* @fptr(sym + add), data8 MSB */
+const R_IA64_FPTR64LSB: u8 = 0x7;	/* @fptr(sym + add), data8 LSB */
+const R_IA64_PCREL60B: u8 = 0x8;	/* @pcrel(sym + add), brl */
+const R_IA64_PCREL21B: u8 = 0x9;	/* @pcrel(sym + add), ptb, call */
+const R_IA64_PCREL21M: u8 = 0xa;	/* @pcrel(sym + add), chk.s */
+const R_IA64_PCREL21F: u8 = 0xb;	/* @pcrel(sym + add), fchkf */
+const R_IA64_PCREL32MSB: u8 = 0xc;	/* @pcrel(sym + add), data4 MSB */
+const R_IA64_PCREL32LSB: u8 = 0xd;	/* @pcrel(sym + add), data4 LSB */
+const R_IA64_PCREL64MSB: u8 = 0xe;	/* @pcrel(sym + add), data8 MSB */
+const R_IA64_PCREL64LSB: u8 = 0xf;	/* @pcrel(sym + add), data8 LSB */
+const R_IA64_LTOFF_FPTR22: u8 = 0x2;	/* @ltoff(@fptr(s+a)), imm22 */
+const R_IA64_LTOFF_FPTR64I: u8 = 0x3;	/* @ltoff(@fptr(s+a)), imm64 */
+const R_IA64_LTOFF_FPTR32MSB: u8 = 0x4;	/* @ltoff(@fptr(s+a)), data4 MSB */
+const R_IA64_LTOFF_FPTR32LSB: u8 = 0x5;	/* @ltoff(@fptr(s+a)), data4 LSB */
+const R_IA64_LTOFF_FPTR64MSB: u8 = 0x6;	/* @ltoff(@fptr(s+a)), data8 MSB */
+const R_IA64_LTOFF_FPTR64LSB: u8 = 0x7;	/* @ltoff(@fptr(s+a)), data8 LSB */
+const R_IA64_SEGREL32MSB: u8 = 0xc;	/* @segrel(sym + add), data4 MSB */
+const R_IA64_SEGREL32LSB: u8 = 0xd;	/* @segrel(sym + add), data4 LSB */
+const R_IA64_SEGREL64MSB: u8 = 0xe;	/* @segrel(sym + add), data8 MSB */
+const R_IA64_SEGREL64LSB: u8 = 0xf;	/* @segrel(sym + add), data8 LSB */
+const R_IA64_SECREL32MSB: u8 = 0x4;	/* @secrel(sym + add), data4 MSB */
+const R_IA64_SECREL32LSB: u8 = 0x5;	/* @secrel(sym + add), data4 LSB */
+const R_IA64_SECREL64MSB: u8 = 0x6;	/* @secrel(sym + add), data8 MSB */
+const R_IA64_SECREL64LSB: u8 = 0x7;	/* @secrel(sym + add), data8 LSB */
+const R_IA64_REL32MSB: u8 = 0xc;	/* data 4 + REL */
+const R_IA64_REL32LSB: u8 = 0xd;	/* data 4 + REL */
+const R_IA64_REL64MSB: u8 = 0xe;	/* data 8 + REL */
+const R_IA64_REL64LSB: u8 = 0xf;	/* data 8 + REL */
+const R_IA64_LTV32MSB: u8 = 0x4;	/* symbol + addend, data4 MSB */
+const R_IA64_LTV32LSB: u8 = 0x5;	/* symbol + addend, data4 LSB */
+const R_IA64_LTV64MSB: u8 = 0x6;	/* symbol + addend, data8 MSB */
+const R_IA64_LTV64LSB: u8 = 0x7;	/* symbol + addend, data8 LSB */
+const R_IA64_PCREL21BI: u8 = 0x9;	/* @pcrel(sym + add), 21bit inst */
+const R_IA64_PCREL22: u8 = 0xa;	/* @pcrel(sym + add), 22bit inst */
+const R_IA64_PCREL64I: u8 = 0xb;	/* @pcrel(sym + add), 64bit inst */
+const R_IA64_IPLTMSB: u8 = 0x0;	/* dynamic reloc, imported PLT, MSB */
+const R_IA64_IPLTLSB: u8 = 0x1;	/* dynamic reloc, imported PLT, LSB */
+const R_IA64_COPY: u8 = 0x4;	/* copy relocation */
+const R_IA64_SUB: u8 = 0x5;	/* Addend and symbol difference */
+const R_IA64_LTOFF22X: u8 = 0x6;	/* LTOFF22, relaxable.  */
+const R_IA64_LDXMOV: u8 = 0x7;	/* Use of LTOFF22X.  */
+const R_IA64_TPREL14: u8 = 0x1;	/* @tprel(sym + add), imm14 */
+const R_IA64_TPREL22: u8 = 0x2;	/* @tprel(sym + add), imm22 */
+const R_IA64_TPREL64I: u8 = 0x3;	/* @tprel(sym + add), imm64 */
+const R_IA64_TPREL64MSB: u8 = 0x6;	/* @tprel(sym + add), data8 MSB */
+const R_IA64_TPREL64LSB: u8 = 0x7;	/* @tprel(sym + add), data8 LSB */
+const R_IA64_LTOFF_TPREL22: u8 = 0xa;	/* @ltoff(@tprel(s+a)), imm2 */
+const R_IA64_DTPMOD64MSB: u8 = 0x6;	/* @dtpmod(sym + add), data8 MSB */
+const R_IA64_DTPMOD64LSB: u8 = 0x7;	/* @dtpmod(sym + add), data8 LSB */
+const R_IA64_LTOFF_DTPMOD22: u8 = 0xa;	/* @ltoff(@dtpmod(sym + add)), imm22 */
+const R_IA64_DTPREL14: u8 = 0x1;	/* @dtprel(sym + add), imm14 */
+const R_IA64_DTPREL22: u8 = 0x2;	/* @dtprel(sym + add), imm22 */
+const R_IA64_DTPREL64I: u8 = 0x3;	/* @dtprel(sym + add), imm64 */
+const R_IA64_DTPREL32MSB: u8 = 0x4;	/* @dtprel(sym + add), data4 MSB */
+const R_IA64_DTPREL32LSB: u8 = 0x5;	/* @dtprel(sym + add), data4 LSB */
+const R_IA64_DTPREL64MSB: u8 = 0x6;	/* @dtprel(sym + add), data8 MSB */
+const R_IA64_DTPREL64LSB: u8 = 0x7;	/* @dtprel(sym + add), data8 LSB */
+const R_IA64_LTOFF_DTPREL22: u8 = 0xa;	/* @ltoff(@dtprel(s+a)), imm22 */
+
+/* SH specific declarations */
+
+/* Processor specific flags for the ELF header e_flags field.  */
+const EF_SH_MACH_MASK: u8 = 0xf;
+const EF_SH_UNKNOWN: u8 = 0x0;
+const EF_SH1: u8 = 0x1;
+const EF_SH2: u8 = 0x2;
+const EF_SH3: u8 = 0x3;
+const EF_SH_DSP: u8 = 0x4;
+const EF_SH3_DSP: u8 = 0x5;
+const EF_SH4AL_DSP: u8 = 0x6;
+const EF_SH3E: u8 = 0x8;
+const EF_SH4: u8 = 0x9;
+const EF_SH2E: u8 = 0xb;
+const EF_SH4A: u8 = 0xc;
+const EF_SH2A: u8 = 0xd;
+const EF_SH4_NOFPU: u8 = 0x0;
+const EF_SH4A_NOFPU: u8 = 0x1;
+const EF_SH4_NOMMU_NOFPU: u8 = 0x2;
+const EF_SH2A_NOFPU: u8 = 0x3;
+const EF_SH3_NOMMU: u8 = 0x4;
+const EF_SH2A_SH4_NOFPU: u8 = 0x5;
+const EF_SH2A_SH3_NOFPU: u8 = 0x6;
+const EF_SH2A_SH4: u8 = 0x7;
+const EF_SH2A_SH3E: u8 = 0x8;
+
+/* SH relocs.  */
+const R_SH_NONE: u8 = 0;
+const R_SH_DIR32: u8 = 1;
+const R_SH_REL32: u8 = 2;
+const R_SH_DIR8WPN: u8 = 3;
+const R_SH_IND12W: u8 = 4;
+const R_SH_DIR8WPL: u8 = 5;
+const R_SH_DIR8WPZ: u8 = 6;
+const R_SH_DIR8BP: u8 = 7;
+const R_SH_DIR8W: u8 = 8;
+const R_SH_DIR8L: u8 = 9;
+const R_SH_SWITCH16: u8 = 25;
+const R_SH_SWITCH32: u8 = 26;
+const R_SH_USES: u8 = 27;
+const R_SH_COUNT: u8 = 28;
+const R_SH_ALIGN: u8 = 29;
+const R_SH_CODE: u8 = 30;
+const R_SH_DATA: u8 = 31;
+const R_SH_LABEL: u8 = 32;
+const R_SH_SWITCH8: u8 = 33;
+const R_SH_GNU_VTINHERIT: u8 = 34;
+const R_SH_GNU_VTENTRY: u8 = 35;
+const R_SH_TLS_GD_32: u8 = 144;
+const R_SH_TLS_LD_32: u8 = 145;
+const R_SH_TLS_LDO_32: u8 = 146;
+const R_SH_TLS_IE_32: u8 = 147;
+const R_SH_TLS_LE_32: u8 = 148;
+const R_SH_TLS_DTPMOD32: u8 = 149;
+const R_SH_TLS_DTPOFF32: u8 = 150;
+const R_SH_TLS_TPOFF32: u8 = 151;
+const R_SH_GOT32: u8 = 160;
+const R_SH_PLT32: u8 = 161;
+const R_SH_COPY: u8 = 162;
+const R_SH_GLOB_DAT: u8 = 163;
+const R_SH_JMP_SLOT: u8 = 164;
+const R_SH_RELATIVE: u8 = 165;
+const R_SH_GOTOFF: u8 = 166;
+const R_SH_GOTPC: u8 = 167;
+/* Keep this the last entry.  */
+const R_SH_NUM: u8 = 256;
+
+/* S/390 specific definitions.  */
+
+/* Valid values for the e_flags field.  */
+
+const EF_S390_HIGH_GPRS: u8 = 0x1;  /* High GPRs kernel facility needed.  */
+
+/* Additional s390 relocs */
+
+const R_390_NONE: u8 = 0;	/* No reloc.  */
+const R_390_8: u8 = 1;	/* Direct 8 bit.  */
+const R_390_12: u8 = 2;	/* Direct 12 bit.  */
+const R_390_16: u8 = 3;	/* Direct 16 bit.  */
+const R_390_32: u8 = 4;	/* Direct 32 bit.  */
+const R_390_PC32: u8 = 5;	/* PC relative 32 bit.	*/
+const R_390_GOT12: u8 = 6;	/* 12 bit GOT offset.  */
+const R_390_GOT32: u8 = 7;	/* 32 bit GOT offset.  */
+const R_390_PLT32: u8 = 8;	/* 32 bit PC relative PLT address.  */
+const R_390_COPY: u8 = 9;	/* Copy symbol at runtime.  */
+const R_390_GLOB_DAT: u8 = 10;	/* Create GOT entry.  */
+const R_390_JMP_SLOT: u8 = 11;	/* Create PLT entry.  */
+const R_390_RELATIVE: u8 = 12;	/* Adjust by program base.  */
+const R_390_GOTOFF32: u8 = 13;	/* 32 bit offset to GOT.	 */
+const R_390_GOTPC: u8 = 14;	/* 32 bit PC relative offset to GOT.  */
+const R_390_GOT16: u8 = 15;	/* 16 bit GOT offset.  */
+const R_390_PC16: u8 = 16;	/* PC relative 16 bit.	*/
+const R_390_PC16DBL: u8 = 17;	/* PC relative 16 bit shifted by 1.  */
+const R_390_PLT16DBL: u8 = 18;	/* 16 bit PC rel. PLT shifted by 1.  */
+const R_390_PC32DBL: u8 = 19;	/* PC relative 32 bit shifted by 1.  */
+const R_390_PLT32DBL: u8 = 20;	/* 32 bit PC rel. PLT shifted by 1.  */
+const R_390_GOTPCDBL: u8 = 21;	/* 32 bit PC rel. GOT shifted by 1.  */
+const R_390_64: u8 = 22;	/* Direct 64 bit.  */
+const R_390_PC64: u8 = 23;	/* PC relative 64 bit.	*/
+const R_390_GOT64: u8 = 24;	/* 64 bit GOT offset.  */
+const R_390_PLT64: u8 = 25;	/* 64 bit PC relative PLT address.  */
+const R_390_GOTENT: u8 = 26;	/* 32 bit PC rel. to GOT entry >> 1. */
+const R_390_GOTOFF16: u8 = 27;	/* 16 bit offset to GOT. */
+const R_390_GOTOFF64: u8 = 28;	/* 64 bit offset to GOT. */
+const R_390_GOTPLT12: u8 = 29;	/* 12 bit offset to jump slot.	*/
+const R_390_GOTPLT16: u8 = 30;	/* 16 bit offset to jump slot.	*/
+const R_390_GOTPLT32: u8 = 31;	/* 32 bit offset to jump slot.	*/
+const R_390_GOTPLT64: u8 = 32;	/* 64 bit offset to jump slot.	*/
+const R_390_GOTPLTENT: u8 = 33;	/* 32 bit rel. offset to jump slot.  */
+const R_390_PLTOFF16: u8 = 34;	/* 16 bit offset from GOT to PLT. */
+const R_390_PLTOFF32: u8 = 35;	/* 32 bit offset from GOT to PLT. */
+const R_390_PLTOFF64: u8 = 36;	/* 16 bit offset from GOT to PLT. */
+const R_390_TLS_LOAD: u8 = 37;	/* Tag for load insn in TLS code.  */
+const R_390_TLS_GDCALL: u8 = 38;	/* Tag for function call in general
+					   dynamic TLS code. */
+const R_390_TLS_LDCALL: u8 = 39;	/* Tag for function call in local
+					   dynamic TLS code. */
+const R_390_TLS_GD32: u8 = 40;	/* Direct 32 bit for general dynamic
+					   thread local data.  */
+const R_390_TLS_GD64: u8 = 41;	/* Direct 64 bit for general dynamic
+					  thread local data.  */
+const R_390_TLS_GOTIE12: u8 = 42;	/* 12 bit GOT offset for static TLS
+					   block offset.  */
+const R_390_TLS_GOTIE32: u8 = 43;	/* 32 bit GOT offset for static TLS
+					   block offset.  */
+const R_390_TLS_GOTIE64: u8 = 44;	/* 64 bit GOT offset for static TLS
+					   block offset. */
+const R_390_TLS_LDM32: u8 = 45;	/* Direct 32 bit for local dynamic
+					   thread local data in LE code.  */
+const R_390_TLS_LDM64: u8 = 46;	/* Direct 64 bit for local dynamic
+					   thread local data in LE code.  */
+const R_390_TLS_IE32: u8 = 47;	/* 32 bit address of GOT entry for
+					   negated static TLS block offset.  */
+const R_390_TLS_IE64: u8 = 48;	/* 64 bit address of GOT entry for
+					   negated static TLS block offset.  */
+const R_390_TLS_IEENT: u8 = 49;	/* 32 bit rel. offset to GOT entry for
+					   negated static TLS block offset.  */
+const R_390_TLS_LE32: u8 = 50;	/* 32 bit negated offset relative to
+					   static TLS block.  */
+const R_390_TLS_LE64: u8 = 51;	/* 64 bit negated offset relative to
+					   static TLS block.  */
+const R_390_TLS_LDO32: u8 = 52;	/* 32 bit offset relative to TLS
+					   block.  */
+const R_390_TLS_LDO64: u8 = 53;	/* 64 bit offset relative to TLS
+					   block.  */
+const R_390_TLS_DTPMOD: u8 = 54;	/* ID of module containing symbol.  */
+const R_390_TLS_DTPOFF: u8 = 55;	/* Offset in TLS block.	 */
+const R_390_TLS_TPOFF: u8 = 56;	/* Negated offset in static TLS
+					   block.  */
+const R_390_20: u8 = 57;	/* Direct 20 bit.  */
+const R_390_GOT20: u8 = 58;	/* 20 bit GOT offset.  */
+const R_390_GOTPLT20: u8 = 59;	/* 20 bit offset to jump slot.  */
+const R_390_TLS_GOTIE20: u8 = 60;	/* 20 bit GOT offset for static TLS
+					   block offset.  */
+const R_390_IRELATIVE: u8 = 61;      /* STT_GNU_IFUNC relocation.  */
+/* Keep this the last entry.  */
+const R_390_NUM: u8 = 62;
+
+
+/* CRIS relocations.  */
+const R_CRIS_NONE: u8 = 0;
+const R_CRIS_8: u8 = 1;
+const R_CRIS_16: u8 = 2;
+const R_CRIS_32: u8 = 3;
+const R_CRIS_8_PCREL: u8 = 4;
+const R_CRIS_16_PCREL: u8 = 5;
+const R_CRIS_32_PCREL: u8 = 6;
+const R_CRIS_GNU_VTINHERIT: u8 = 7;
+const R_CRIS_GNU_VTENTRY: u8 = 8;
+const R_CRIS_COPY: u8 = 9;
+const R_CRIS_GLOB_DAT: u8 = 10;
+const R_CRIS_JUMP_SLOT: u8 = 11;
+const R_CRIS_RELATIVE: u8 = 12;
+const R_CRIS_16_GOT: u8 = 13;
+const R_CRIS_32_GOT: u8 = 14;
+const R_CRIS_16_GOTPLT: u8 = 15;
+const R_CRIS_32_GOTPLT: u8 = 16;
+const R_CRIS_32_GOTREL: u8 = 17;
+const R_CRIS_32_PLT_GOTREL: u8 = 18;
+const R_CRIS_32_PLT_PCREL: u8 = 19;
+
+const R_CRIS_NUM: u8 = 20;
+
+
+/* AMD x86-64 relocations.  */
+const R_X86_64_NONE: u8 = 0;	/* No reloc */
+const R_X86_64_64: u8 = 1;	/* Direct 64 bit  */
+const R_X86_64_PC32: u8 = 2;	/* PC relative 32 bit signed */
+const R_X86_64_GOT32: u8 = 3;	/* 32 bit GOT entry */
+const R_X86_64_PLT32: u8 = 4;	/* 32 bit PLT address */
+const R_X86_64_COPY: u8 = 5;	/* Copy symbol at runtime */
+const R_X86_64_GLOB_DAT: u8 = 6;	/* Create GOT entry */
+const R_X86_64_JUMP_SLOT: u8 = 7;	/* Create PLT entry */
+const R_X86_64_RELATIVE: u8 = 8;	/* Adjust by program base */
+const R_X86_64_GOTPCREL: u8 = 9;	/* 32 bit signed PC relative
+					   offset to GOT */
+const R_X86_64_32: u8 = 10;	/* Direct 32 bit zero extended */
+const R_X86_64_32S: u8 = 11;	/* Direct 32 bit sign extended */
+const R_X86_64_16: u8 = 12;	/* Direct 16 bit zero extended */
+const R_X86_64_PC16: u8 = 13;	/* 16 bit sign extended pc relative */
+const R_X86_64_8: u8 = 14;	/* Direct 8 bit sign extended  */
+const R_X86_64_PC8: u8 = 15;	/* 8 bit sign extended pc relative */
+const R_X86_64_DTPMOD64: u8 = 16;	/* ID of module containing symbol */
+const R_X86_64_DTPOFF64: u8 = 17;	/* Offset in module's TLS block */
+const R_X86_64_TPOFF64: u8 = 18;	/* Offset in initial TLS block */
+const R_X86_64_TLSGD: u8 = 19;	/* 32 bit signed PC relative offset
+					   to two GOT entries for GD symbol */
+const R_X86_64_TLSLD: u8 = 20;	/* 32 bit signed PC relative offset
+					   to two GOT entries for LD symbol */
+const R_X86_64_DTPOFF32: u8 = 21;	/* Offset in TLS block */
+const R_X86_64_GOTTPOFF: u8 = 22;	/* 32 bit signed PC relative offset
+					   to GOT entry for IE symbol */
+const R_X86_64_TPOFF32: u8 = 23;	/* Offset in initial TLS block */
+const R_X86_64_PC64: u8 = 24;	/* PC relative 64 bit */
+const R_X86_64_GOTOFF64: u8 = 25;	/* 64 bit offset to GOT */
+const R_X86_64_GOTPC32: u8 = 26;	/* 32 bit signed pc relative
+					   offset to GOT */
+const R_X86_64_GOT64: u8 = 27;	/* 64-bit GOT entry offset */
+const R_X86_64_GOTPCREL64: u8 = 28;	/* 64-bit PC relative offset
+					   to GOT entry */
+const R_X86_64_GOTPC64: u8 = 29;	/* 64-bit PC relative offset to GOT */
+const R_X86_64_GOTPLT64: u8 = 30; 	/* like GOT64, says PLT entry needed */
+const R_X86_64_PLTOFF64: u8 = 31;	/* 64-bit GOT relative offset
+					   to PLT entry */
+const R_X86_64_SIZE32: u8 = 32;	/* Size of symbol plus 32-bit addend */
+const R_X86_64_SIZE64: u8 = 33;	/* Size of symbol plus 64-bit addend */
+const R_X86_64_GOTPC32_TLSDESC: u8 = 34;	/* GOT offset for TLS descriptor.  */
+const R_X86_64_TLSDESC_CALL: u8 = 35;	/* Marker for call through TLS
+					   descriptor.  */
+const R_X86_64_TLSDESC: u8 = 36;	/* TLS descriptor.  */
+const R_X86_64_IRELATIVE: u8 = 37;	/* Adjust indirectly by program base */
+const R_X86_64_RELATIVE64: u8 = 38;	/* 64-bit adjust by program base */
+					/* 39 Reserved was R_X86_64_PC32_BND */
+					/* 40 Reserved was R_X86_64_PLT32_BND */
+const R_X86_64_GOTPCRELX: u8 = 41;	/* Load from 32 bit signed pc relative
+					   offset to GOT entry without REX
+					   prefix, relaxable.  */
+const R_X86_64_REX_GOTPCRELX: u8 = 42;	/* Load from 32 bit signed pc relative
+					   offset to GOT entry with REX prefix,
+					   relaxable.  */
+const R_X86_64_NUM: u8 = 43;
+
+/* x86-64 sh_u8 values.  */
+const SHT_X86_64_UNWIND: u8 = 0x1; /* Unwind information.  */
+
+
+/* AM33 relocations.  */
+const R_MN10300_NONE: u8 = 0;	/* No reloc.  */
+const R_MN10300_32: u8 = 1;	/* Direct 32 bit.  */
+const R_MN10300_16: u8 = 2;	/* Direct 16 bit.  */
+const R_MN10300_8: u8 = 3;	/* Direct 8 bit.  */
+const R_MN10300_PCREL32: u8 = 4;	/* PC-relative 32-bit.  */
+const R_MN10300_PCREL16: u8 = 5;	/* PC-relative 16-bit signed.  */
+const R_MN10300_PCREL8: u8 = 6;	/* PC-relative 8-bit signed.  */
+const R_MN10300_GNU_VTINHERIT: u8 = 7;	/* Ancient C++ vtable garbage... */
+const R_MN10300_GNU_VTENTRY: u8 = 8;	/* ... collection annotation.  */
+const R_MN10300_24: u8 = 9;	/* Direct 24 bit.  */
+const R_MN10300_GOTPC32: u8 = 10;	/* 32-bit PCrel offset to GOT.  */
+const R_MN10300_GOTPC16: u8 = 11;	/* 16-bit PCrel offset to GOT.  */
+const R_MN10300_GOTOFF32: u8 = 12;	/* 32-bit offset from GOT.  */
+const R_MN10300_GOTOFF24: u8 = 13;	/* 24-bit offset from GOT.  */
+const R_MN10300_GOTOFF16: u8 = 14;	/* 16-bit offset from GOT.  */
+const R_MN10300_PLT32: u8 = 15;	/* 32-bit PCrel to PLT entry.  */
+const R_MN10300_PLT16: u8 = 16;	/* 16-bit PCrel to PLT entry.  */
+const R_MN10300_GOT32: u8 = 17;	/* 32-bit offset to GOT entry.  */
+const R_MN10300_GOT24: u8 = 18;	/* 24-bit offset to GOT entry.  */
+const R_MN10300_GOT16: u8 = 19;	/* 16-bit offset to GOT entry.  */
+const R_MN10300_COPY: u8 = 20;	/* Copy symbol at runtime.  */
+const R_MN10300_GLOB_DAT: u8 = 21;	/* Create GOT entry.  */
+const R_MN10300_JMP_SLOT: u8 = 22;	/* Create PLT entry.  */
+const R_MN10300_RELATIVE: u8 = 23;	/* Adjust by program base.  */
+const R_MN10300_TLS_GD: u8 = 24;	/* 32-bit offset for global dynamic.  */
+const R_MN10300_TLS_LD: u8 = 25;	/* 32-bit offset for local dynamic.  */
+const R_MN10300_TLS_LDO: u8 = 26;	/* Module-relative offset.  */
+const R_MN10300_TLS_GOTIE: u8 = 27;	/* GOT offset for static TLS block
+					   offset.  */
+const R_MN10300_TLS_IE: u8 = 28;	/* GOT address for static TLS block
+					   offset.  */
+const R_MN10300_TLS_LE: u8 = 29;	/* Offset relative to static TLS
+					   block.  */
+const R_MN10300_TLS_DTPMOD: u8 = 30;	/* ID of module containing symbol.  */
+const R_MN10300_TLS_DTPOFF: u8 = 31;	/* Offset in module TLS block.  */
+const R_MN10300_TLS_TPOFF: u8 = 32;	/* Offset in static TLS block.  */
+const R_MN10300_SYM_DIFF: u8 = 33;	/* Adjustment for next reloc as needed
+					   by linker relaxation.  */
+const R_MN10300_ALIGN: u8 = 34;	/* Alignment requirement for linker
+					   relaxation.  */
+const R_MN10300_NUM: u8 = 35;
+
+
+/* M32R relocs.  */
+const R_M32R_NONE: u8 = 0;	/* No reloc. */
+const R_M32R_16: u8 = 1;	/* Direct 16 bit. */
+const R_M32R_32: u8 = 2;	/* Direct 32 bit. */
+const R_M32R_24: u8 = 3;	/* Direct 24 bit. */
+const R_M32R_10_PCREL: u8 = 4;	/* PC relative 10 bit shifted. */
+const R_M32R_18_PCREL: u8 = 5;	/* PC relative 18 bit shifted. */
+const R_M32R_26_PCREL: u8 = 6;	/* PC relative 26 bit shifted. */
+const R_M32R_HI16_ULO: u8 = 7;	/* High 16 bit with unsigned low. */
+const R_M32R_HI16_SLO: u8 = 8;	/* High 16 bit with signed low. */
+const R_M32R_LO16: u8 = 9;	/* Low 16 bit. */
+const R_M32R_SDA16: u8 = 10;	/* 16 bit offset in SDA. */
+const R_M32R_GNU_VTINHERIT: u8 = 11;
+const R_M32R_GNU_VTENTRY: u8 = 12;
+/* M32R relocs use SHT_RELA.  */
+const R_M32R_16_RELA: u8 = 33;	/* Direct 16 bit. */
+const R_M32R_32_RELA: u8 = 34;	/* Direct 32 bit. */
+const R_M32R_24_RELA: u8 = 35;	/* Direct 24 bit. */
+const R_M32R_10_PCREL_RELA: u8 = 36;	/* PC relative 10 bit shifted. */
+const R_M32R_18_PCREL_RELA: u8 = 37;	/* PC relative 18 bit shifted. */
+const R_M32R_26_PCREL_RELA: u8 = 38;	/* PC relative 26 bit shifted. */
+const R_M32R_HI16_ULO_RELA: u8 = 39;	/* High 16 bit with unsigned low */
+const R_M32R_HI16_SLO_RELA: u8 = 40;	/* High 16 bit with signed low */
+const R_M32R_LO16_RELA: u8 = 41;	/* Low 16 bit */
+const R_M32R_SDA16_RELA: u8 = 42;	/* 16 bit offset in SDA */
+const R_M32R_RELA_GNU_VTINHERIT: u8 = 43;
+const R_M32R_RELA_GNU_VTENTRY: u8 = 44;
+const R_M32R_REL32: u8 = 45;	/* PC relative 32 bit.  */
+
+const R_M32R_GOT24: u8 = 48;	/* 24 bit GOT entry */
+const R_M32R_26_PLTREL: u8 = 49;	/* 26 bit PC relative to PLT shifted */
+const R_M32R_COPY: u8 = 50;	/* Copy symbol at runtime */
+const R_M32R_GLOB_DAT: u8 = 51;	/* Create GOT entry */
+const R_M32R_JMP_SLOT: u8 = 52;	/* Create PLT entry */
+const R_M32R_RELATIVE: u8 = 53;	/* Adjust by program base */
+const R_M32R_GOTOFF: u8 = 54;	/* 24 bit offset to GOT */
+const R_M32R_GOTPC24: u8 = 55;	/* 24 bit PC relative offset to GOT */
+const R_M32R_GOT16_HI_ULO: u8 = 56;	/* High 16 bit GOT entry with unsigned
+					   low */
+const R_M32R_GOT16_HI_SLO: u8 = 57;	/* High 16 bit GOT entry with signed
+					   low */
+const R_M32R_GOT16_LO: u8 = 58;	/* Low 16 bit GOT entry */
+const R_M32R_GOTPC_HI_ULO: u8 = 59;	/* High 16 bit PC relative offset to
+					   GOT with unsigned low */
+const R_M32R_GOTPC_HI_SLO: u8 = 60;	/* High 16 bit PC relative offset to
+					   GOT with signed low */
+const R_M32R_GOTPC_LO: u8 = 61;	/* Low 16 bit PC relative offset to
+					   GOT */
+const R_M32R_GOTOFF_HI_ULO: u8 = 62;	/* High 16 bit offset to GOT
+					   with unsigned low */
+const R_M32R_GOTOFF_HI_SLO: u8 = 63;	/* High 16 bit offset to GOT
+					   with signed low */
+const R_M32R_GOTOFF_LO: u8 = 64;	/* Low 16 bit offset to GOT */
+const R_M32R_NUM: u8 = 256;	/* Keep this the last entry. */
+
+/* MicroBlaze relocations */
+const R_MICROBLAZE_NONE: u8 = 0;	/* No reloc. */
+const R_MICROBLAZE_32: u8 = 1;	/* Direct 32 bit. */
+const R_MICROBLAZE_32_PCREL: u8 = 2;	/* PC relative 32 bit. */
+const R_MICROBLAZE_64_PCREL: u8 = 3;	/* PC relative 64 bit. */
+const R_MICROBLAZE_32_PCREL_LO: u8 = 4;	/* Low 16 bits of PCREL32. */
+const R_MICROBLAZE_64: u8 = 5;	/* Direct 64 bit. */
+const R_MICROBLAZE_32_LO: u8 = 6;	/* Low 16 bit. */
+const R_MICROBLAZE_SRO32: u8 = 7;	/* Read-only small data area. */
+const R_MICROBLAZE_SRW32: u8 = 8;	/* Read-write small data area. */
+const R_MICROBLAZE_64_NONE: u8 = 9;	/* No reloc. */
+const R_MICROBLAZE_32_SYM_OP_SYM: u8 = 10;	/* Symbol Op Symbol relocation. */
+const R_MICROBLAZE_GNU_VTINHERIT: u8 = 11;	/* GNU C++ vtable hierarchy. */
+const R_MICROBLAZE_GNU_VTENTRY: u8 = 12;	/* GNU C++ vtable member usage. */
+const R_MICROBLAZE_GOTPC_64: u8 = 13;	/* PC-relative GOT offset.  */
+const R_MICROBLAZE_GOT_64: u8 = 14;	/* GOT entry offset.  */
+const R_MICROBLAZE_PLT_64: u8 = 15;	/* PLT offset (PC-relative).  */
+const R_MICROBLAZE_REL: u8 = 16;	/* Adjust by program base.  */
+const R_MICROBLAZE_JUMP_SLOT: u8 = 17;	/* Create PLT entry.  */
+const R_MICROBLAZE_GLOB_DAT: u8 = 18;	/* Create GOT entry.  */
+const R_MICROBLAZE_GOTOFF_64: u8 = 19;	/* 64 bit offset to GOT. */
+const R_MICROBLAZE_GOTOFF_32: u8 = 20;	/* 32 bit offset to GOT. */
+const R_MICROBLAZE_COPY: u8 = 21;	/* Runtime copy.  */
+const R_MICROBLAZE_TLS: u8 = 22;	/* TLS Reloc. */
+const R_MICROBLAZE_TLSGD: u8 = 23;	/* TLS General Dynamic. */
+const R_MICROBLAZE_TLSLD: u8 = 24;	/* TLS Local Dynamic. */
+const R_MICROBLAZE_TLSDTPMOD32: u8 = 25;	/* TLS Module ID. */
+const R_MICROBLAZE_TLSDTPREL32: u8 = 26;	/* TLS Offset Within TLS Block. */
+const R_MICROBLAZE_TLSDTPREL64: u8 = 27;	/* TLS Offset Within TLS Block. */
+const R_MICROBLAZE_TLSGOTTPREL32: u8 = 28;	/* TLS Offset From Thread Pointer. */
+const R_MICROBLAZE_TLSTPREL32: u8 = 29;	/* TLS Offset From Thread Pointer. */
+
+/* Legal values for d_tag (dynamic entry u8).  */
+const DT_NIOS2_GP: u8 = 0x2; /* Address of _gp.  */
+
+/* Nios II relocations.  */
+const R_NIOS2_NONE: u8 = 0;	/* No reloc.  */
+const R_NIOS2_S16: u8 = 1;	/* Direct signed 16 bit.  */
+const R_NIOS2_U16: u8 = 2;	/* Direct unsigned 16 bit.  */
+const R_NIOS2_PCREL16: u8 = 3;	/* PC relative 16 bit.  */
+const R_NIOS2_CALL26: u8 = 4;	/* Direct call.  */
+const R_NIOS2_IMM5: u8 = 5;	/* 5 bit constant expression.  */
+const R_NIOS2_CACHE_OPX: u8 = 6;	/* 5 bit expression, shift 22.  */
+const R_NIOS2_IMM6: u8 = 7;	/* 6 bit constant expression.  */
+const R_NIOS2_IMM8: u8 = 8;	/* 8 bit constant expression.  */
+const R_NIOS2_HI16: u8 = 9;	/* High 16 bit.  */
+const R_NIOS2_LO16: u8 = 10;	/* Low 16 bit.  */
+const R_NIOS2_HIADJ16: u8 = 11;	/* High 16 bit, adjusted.  */
+const R_NIOS2_BFD_RELOC_32: u8 = 12;	/* 32 bit symbol value + addend.  */
+const R_NIOS2_BFD_RELOC_16: u8 = 13;	/* 16 bit symbol value + addend.  */
+const R_NIOS2_BFD_RELOC_8: u8 = 14;	/* 8 bit symbol value + addend.  */
+const R_NIOS2_GPREL: u8 = 15;	/* 16 bit GP pointer offset.  */
+const R_NIOS2_GNU_VTINHERIT: u8 = 16;	/* GNU C++ vtable hierarchy.  */
+const R_NIOS2_GNU_VTENTRY: u8 = 17;	/* GNU C++ vtable member usage.  */
+const R_NIOS2_UJMP: u8 = 18;	/* Unconditional branch.  */
+const R_NIOS2_CJMP: u8 = 19;	/* Conditional branch.  */
+const R_NIOS2_CALLR: u8 = 20;	/* Indirect call through register.  */
+const R_NIOS2_ALIGN: u8 = 21;	/* Alignment requirement for
+					   linker relaxation.  */
+const R_NIOS2_GOT16: u8 = 22;	/* 16 bit GOT entry.  */
+const R_NIOS2_CALL16: u8 = 23;	/* 16 bit GOT entry for function.  */
+const R_NIOS2_GOTOFF_LO: u8 = 24;	/* %lo of offset to GOT pointer.  */
+const R_NIOS2_GOTOFF_HA: u8 = 25;	/* %hiadj of offset to GOT pointer.  */
+const R_NIOS2_PCREL_LO: u8 = 26;	/* %lo of PC relative offset.  */
+const R_NIOS2_PCREL_HA: u8 = 27;	/* %hiadj of PC relative offset.  */
+const R_NIOS2_TLS_GD16: u8 = 28;	/* 16 bit GOT offset for TLS GD.  */
+const R_NIOS2_TLS_LDM16: u8 = 29;	/* 16 bit GOT offset for TLS LDM.  */
+const R_NIOS2_TLS_LDO16: u8 = 30;	/* 16 bit module relative offset.  */
+const R_NIOS2_TLS_IE16: u8 = 31;	/* 16 bit GOT offset for TLS IE.  */
+const R_NIOS2_TLS_LE16: u8 = 32;	/* 16 bit LE TP-relative offset.  */
+const R_NIOS2_TLS_DTPMOD: u8 = 33;	/* Module number.  */
+const R_NIOS2_TLS_DTPREL: u8 = 34;	/* Module-relative offset.  */
+const R_NIOS2_TLS_TPREL: u8 = 35;	/* TP-relative offset.  */
+const R_NIOS2_COPY: u8 = 36;	/* Copy symbol at runtime.  */
+const R_NIOS2_GLOB_DAT: u8 = 37;	/* Create GOT entry.  */
+const R_NIOS2_JUMP_SLOT: u8 = 38;	/* Create PLT entry.  */
+const R_NIOS2_RELATIVE: u8 = 39;	/* Adjust by program base.  */
+const R_NIOS2_GOTOFF: u8 = 40;	/* 16 bit offset to GOT pointer.  */
+const R_NIOS2_CALL26_NOAT: u8 = 41;	/* Direct call in .noat section.  */
+const R_NIOS2_GOT_LO: u8 = 42;	/* %lo() of GOT entry.  */
+const R_NIOS2_GOT_HA: u8 = 43;	/* %hiadj() of GOT entry.  */
+const R_NIOS2_CALL_LO: u8 = 44;	/* %lo() of function GOT entry.  */
+const R_NIOS2_CALL_HA: u8 = 45;	/* %hiadj() of function GOT entry.  */
+
+/* TILEPro relocations.  */
+const R_TILEPRO_NONE: u8 = 0;	/* No reloc */
+const R_TILEPRO_32: u8 = 1;	/* Direct 32 bit */
+const R_TILEPRO_16: u8 = 2;	/* Direct 16 bit */
+const R_TILEPRO_8: u8 = 3;	/* Direct 8 bit */
+const R_TILEPRO_32_PCREL: u8 = 4;	/* PC relative 32 bit */
+const R_TILEPRO_16_PCREL: u8 = 5;	/* PC relative 16 bit */
+const R_TILEPRO_8_PCREL: u8 = 6;	/* PC relative 8 bit */
+const R_TILEPRO_LO16: u8 = 7;	/* Low 16 bit */
+const R_TILEPRO_HI16: u8 = 8;	/* High 16 bit */
+const R_TILEPRO_HA16: u8 = 9;	/* High 16 bit, adjusted */
+const R_TILEPRO_COPY: u8 = 10;	/* Copy relocation */
+const R_TILEPRO_GLOB_DAT: u8 = 11;	/* Create GOT entry */
+const R_TILEPRO_JMP_SLOT: u8 = 12;	/* Create PLT entry */
+const R_TILEPRO_RELATIVE: u8 = 13;	/* Adjust by program base */
+const R_TILEPRO_BROFF_X1: u8 = 14;	/* X1 pipe branch offset */
+const R_TILEPRO_JOFFLONG_X1: u8 = 15;	/* X1 pipe jump offset */
+const R_TILEPRO_JOFFLONG_X1_PLT: u8 = 16;	/* X1 pipe jump offset to PLT */
+const R_TILEPRO_IMM8_X0: u8 = 17;	/* X0 pipe 8-bit */
+const R_TILEPRO_IMM8_Y0: u8 = 18;	/* Y0 pipe 8-bit */
+const R_TILEPRO_IMM8_X1: u8 = 19;	/* X1 pipe 8-bit */
+const R_TILEPRO_IMM8_Y1: u8 = 20;	/* Y1 pipe 8-bit */
+const R_TILEPRO_MT_IMM15_X1: u8 = 21;	/* X1 pipe mtspr */
+const R_TILEPRO_MF_IMM15_X1: u8 = 22;	/* X1 pipe mfspr */
+const R_TILEPRO_IMM16_X0: u8 = 23;	/* X0 pipe 16-bit */
+const R_TILEPRO_IMM16_X1: u8 = 24;	/* X1 pipe 16-bit */
+const R_TILEPRO_IMM16_X0_LO: u8 = 25;	/* X0 pipe low 16-bit */
+const R_TILEPRO_IMM16_X1_LO: u8 = 26;	/* X1 pipe low 16-bit */
+const R_TILEPRO_IMM16_X0_HI: u8 = 27;	/* X0 pipe high 16-bit */
+const R_TILEPRO_IMM16_X1_HI: u8 = 28;	/* X1 pipe high 16-bit */
+const R_TILEPRO_IMM16_X0_HA: u8 = 29;	/* X0 pipe high 16-bit, adjusted */
+const R_TILEPRO_IMM16_X1_HA: u8 = 30;	/* X1 pipe high 16-bit, adjusted */
+const R_TILEPRO_IMM16_X0_PCREL: u8 = 31;	/* X0 pipe PC relative 16 bit */
+const R_TILEPRO_IMM16_X1_PCREL: u8 = 32;	/* X1 pipe PC relative 16 bit */
+const R_TILEPRO_IMM16_X0_LO_PCREL: u8 = 33;	/* X0 pipe PC relative low 16 bit */
+const R_TILEPRO_IMM16_X1_LO_PCREL: u8 = 34;	/* X1 pipe PC relative low 16 bit */
+const R_TILEPRO_IMM16_X0_HI_PCREL: u8 = 35;	/* X0 pipe PC relative high 16 bit */
+const R_TILEPRO_IMM16_X1_HI_PCREL: u8 = 36;	/* X1 pipe PC relative high 16 bit */
+const R_TILEPRO_IMM16_X0_HA_PCREL: u8 = 37;	/* X0 pipe PC relative ha() 16 bit */
+const R_TILEPRO_IMM16_X1_HA_PCREL: u8 = 38;	/* X1 pipe PC relative ha() 16 bit */
+const R_TILEPRO_IMM16_X0_GOT: u8 = 39;	/* X0 pipe 16-bit GOT offset */
+const R_TILEPRO_IMM16_X1_GOT: u8 = 40;	/* X1 pipe 16-bit GOT offset */
+const R_TILEPRO_IMM16_X0_GOT_LO: u8 = 41;	/* X0 pipe low 16-bit GOT offset */
+const R_TILEPRO_IMM16_X1_GOT_LO: u8 = 42;	/* X1 pipe low 16-bit GOT offset */
+const R_TILEPRO_IMM16_X0_GOT_HI: u8 = 43;	/* X0 pipe high 16-bit GOT offset */
+const R_TILEPRO_IMM16_X1_GOT_HI: u8 = 44;	/* X1 pipe high 16-bit GOT offset */
+const R_TILEPRO_IMM16_X0_GOT_HA: u8 = 45;	/* X0 pipe ha() 16-bit GOT offset */
+const R_TILEPRO_IMM16_X1_GOT_HA: u8 = 46;	/* X1 pipe ha() 16-bit GOT offset */
+const R_TILEPRO_MMSTART_X0: u8 = 47;	/* X0 pipe mm "start" */
+const R_TILEPRO_MMEND_X0: u8 = 48;	/* X0 pipe mm "end" */
+const R_TILEPRO_MMSTART_X1: u8 = 49;	/* X1 pipe mm "start" */
+const R_TILEPRO_MMEND_X1: u8 = 50;	/* X1 pipe mm "end" */
+const R_TILEPRO_SHAMT_X0: u8 = 51;	/* X0 pipe shift amount */
+const R_TILEPRO_SHAMT_X1: u8 = 52;	/* X1 pipe shift amount */
+const R_TILEPRO_SHAMT_Y0: u8 = 53;	/* Y0 pipe shift amount */
+const R_TILEPRO_SHAMT_Y1: u8 = 54;	/* Y1 pipe shift amount */
+const R_TILEPRO_DEST_IMM8_X1: u8 = 55;	/* X1 pipe destination 8-bit */
+/* Relocs 56-59 are currently not defined.  */
+const R_TILEPRO_TLS_GD_CALL: u8 = 60;	/* "jal" for TLS GD */
+const R_TILEPRO_IMM8_X0_TLS_GD_ADD: u8 = 61;	/* X0 pipe "addi" for TLS GD */
+const R_TILEPRO_IMM8_X1_TLS_GD_ADD: u8 = 62;	/* X1 pipe "addi" for TLS GD */
+const R_TILEPRO_IMM8_Y0_TLS_GD_ADD: u8 = 63;	/* Y0 pipe "addi" for TLS GD */
+const R_TILEPRO_IMM8_Y1_TLS_GD_ADD: u8 = 64;	/* Y1 pipe "addi" for TLS GD */
+const R_TILEPRO_TLS_IE_LOAD: u8 = 65;	/* "lw_tls" for TLS IE */
+const R_TILEPRO_IMM16_X0_TLS_GD: u8 = 66;	/* X0 pipe 16-bit TLS GD offset */
+const R_TILEPRO_IMM16_X1_TLS_GD: u8 = 67;	/* X1 pipe 16-bit TLS GD offset */
+const R_TILEPRO_IMM16_X0_TLS_GD_LO: u8 = 68;	/* X0 pipe low 16-bit TLS GD offset */
+const R_TILEPRO_IMM16_X1_TLS_GD_LO: u8 = 69;	/* X1 pipe low 16-bit TLS GD offset */
+const R_TILEPRO_IMM16_X0_TLS_GD_HI: u8 = 70;	/* X0 pipe high 16-bit TLS GD offset */
+const R_TILEPRO_IMM16_X1_TLS_GD_HI: u8 = 71;	/* X1 pipe high 16-bit TLS GD offset */
+const R_TILEPRO_IMM16_X0_TLS_GD_HA: u8 = 72;	/* X0 pipe ha() 16-bit TLS GD offset */
+const R_TILEPRO_IMM16_X1_TLS_GD_HA: u8 = 73;	/* X1 pipe ha() 16-bit TLS GD offset */
+const R_TILEPRO_IMM16_X0_TLS_IE: u8 = 74;	/* X0 pipe 16-bit TLS IE offset */
+const R_TILEPRO_IMM16_X1_TLS_IE: u8 = 75;	/* X1 pipe 16-bit TLS IE offset */
+const R_TILEPRO_IMM16_X0_TLS_IE_LO: u8 = 76;	/* X0 pipe low 16-bit TLS IE offset */
+const R_TILEPRO_IMM16_X1_TLS_IE_LO: u8 = 77;	/* X1 pipe low 16-bit TLS IE offset */
+const R_TILEPRO_IMM16_X0_TLS_IE_HI: u8 = 78;	/* X0 pipe high 16-bit TLS IE offset */
+const R_TILEPRO_IMM16_X1_TLS_IE_HI: u8 = 79;	/* X1 pipe high 16-bit TLS IE offset */
+const R_TILEPRO_IMM16_X0_TLS_IE_HA: u8 = 80;	/* X0 pipe ha() 16-bit TLS IE offset */
+const R_TILEPRO_IMM16_X1_TLS_IE_HA: u8 = 81;	/* X1 pipe ha() 16-bit TLS IE offset */
+const R_TILEPRO_TLS_DTPMOD32: u8 = 82;	/* ID of module containing symbol */
+const R_TILEPRO_TLS_DTPOFF32: u8 = 83;	/* Offset in TLS block */
+const R_TILEPRO_TLS_TPOFF32: u8 = 84;	/* Offset in static TLS block */
+const R_TILEPRO_IMM16_X0_TLS_LE: u8 = 85;	/* X0 pipe 16-bit TLS LE offset */
+const R_TILEPRO_IMM16_X1_TLS_LE: u8 = 86;	/* X1 pipe 16-bit TLS LE offset */
+const R_TILEPRO_IMM16_X0_TLS_LE_LO: u8 = 87;	/* X0 pipe low 16-bit TLS LE offset */
+const R_TILEPRO_IMM16_X1_TLS_LE_LO: u8 = 88;	/* X1 pipe low 16-bit TLS LE offset */
+const R_TILEPRO_IMM16_X0_TLS_LE_HI: u8 = 89;	/* X0 pipe high 16-bit TLS LE offset */
+const R_TILEPRO_IMM16_X1_TLS_LE_HI: u8 = 90;	/* X1 pipe high 16-bit TLS LE offset */
+const R_TILEPRO_IMM16_X0_TLS_LE_HA: u8 = 91;	/* X0 pipe ha() 16-bit TLS LE offset */
+const R_TILEPRO_IMM16_X1_TLS_LE_HA: u8 = 92;	/* X1 pipe ha() 16-bit TLS LE offset */
+
+const R_TILEPRO_GNU_VTINHERIT: u8 = 128;	/* GNU C++ vtable hierarchy */
+const R_TILEPRO_GNU_VTENTRY: u8 = 129;	/* GNU C++ vtable member usage */
+
+const R_TILEPRO_NUM: u8 = 130;
+
+
+/* TILE-Gx relocations.  */
+const R_TILEGX_NONE: u8 = 0;	/* No reloc */
+const R_TILEGX_64: u8 = 1;	/* Direct 64 bit */
+const R_TILEGX_32: u8 = 2;	/* Direct 32 bit */
+const R_TILEGX_16: u8 = 3;	/* Direct 16 bit */
+const R_TILEGX_8: u8 = 4;	/* Direct 8 bit */
+const R_TILEGX_64_PCREL: u8 = 5;	/* PC relative 64 bit */
+const R_TILEGX_32_PCREL: u8 = 6;	/* PC relative 32 bit */
+const R_TILEGX_16_PCREL: u8 = 7;	/* PC relative 16 bit */
+const R_TILEGX_8_PCREL: u8 = 8;	/* PC relative 8 bit */
+const R_TILEGX_HW0: u8 = 9;	/* hword 0 16-bit */
+const R_TILEGX_HW1: u8 = 10;	/* hword 1 16-bit */
+const R_TILEGX_HW2: u8 = 11;	/* hword 2 16-bit */
+const R_TILEGX_HW3: u8 = 12;	/* hword 3 16-bit */
+const R_TILEGX_HW0_LAST: u8 = 13;	/* last hword 0 16-bit */
+const R_TILEGX_HW1_LAST: u8 = 14;	/* last hword 1 16-bit */
+const R_TILEGX_HW2_LAST: u8 = 15;	/* last hword 2 16-bit */
+const R_TILEGX_COPY: u8 = 16;	/* Copy relocation */
+const R_TILEGX_GLOB_DAT: u8 = 17;	/* Create GOT entry */
+const R_TILEGX_JMP_SLOT: u8 = 18;	/* Create PLT entry */
+const R_TILEGX_RELATIVE: u8 = 19;	/* Adjust by program base */
+const R_TILEGX_BROFF_X1: u8 = 20;	/* X1 pipe branch offset */
+const R_TILEGX_JUMPOFF_X1: u8 = 21;	/* X1 pipe jump offset */
+const R_TILEGX_JUMPOFF_X1_PLT: u8 = 22;	/* X1 pipe jump offset to PLT */
+const R_TILEGX_IMM8_X0: u8 = 23;	/* X0 pipe 8-bit */
+const R_TILEGX_IMM8_Y0: u8 = 24;	/* Y0 pipe 8-bit */
+const R_TILEGX_IMM8_X1: u8 = 25;	/* X1 pipe 8-bit */
+const R_TILEGX_IMM8_Y1: u8 = 26;	/* Y1 pipe 8-bit */
+const R_TILEGX_DEST_IMM8_X1: u8 = 27;	/* X1 pipe destination 8-bit */
+const R_TILEGX_MT_IMM14_X1: u8 = 28;	/* X1 pipe mtspr */
+const R_TILEGX_MF_IMM14_X1: u8 = 29;	/* X1 pipe mfspr */
+const R_TILEGX_MMSTART_X0: u8 = 30;	/* X0 pipe mm "start" */
+const R_TILEGX_MMEND_X0: u8 = 31;	/* X0 pipe mm "end" */
+const R_TILEGX_SHAMT_X0: u8 = 32;	/* X0 pipe shift amount */
+const R_TILEGX_SHAMT_X1: u8 = 33;	/* X1 pipe shift amount */
+const R_TILEGX_SHAMT_Y0: u8 = 34;	/* Y0 pipe shift amount */
+const R_TILEGX_SHAMT_Y1: u8 = 35;	/* Y1 pipe shift amount */
+const R_TILEGX_IMM16_X0_HW0: u8 = 36;	/* X0 pipe hword 0 */
+const R_TILEGX_IMM16_X1_HW0: u8 = 37;	/* X1 pipe hword 0 */
+const R_TILEGX_IMM16_X0_HW1: u8 = 38;	/* X0 pipe hword 1 */
+const R_TILEGX_IMM16_X1_HW1: u8 = 39;	/* X1 pipe hword 1 */
+const R_TILEGX_IMM16_X0_HW2: u8 = 40;	/* X0 pipe hword 2 */
+const R_TILEGX_IMM16_X1_HW2: u8 = 41;	/* X1 pipe hword 2 */
+const R_TILEGX_IMM16_X0_HW3: u8 = 42;	/* X0 pipe hword 3 */
+const R_TILEGX_IMM16_X1_HW3: u8 = 43;	/* X1 pipe hword 3 */
+const R_TILEGX_IMM16_X0_HW0_LAST: u8 = 44;	/* X0 pipe last hword 0 */
+const R_TILEGX_IMM16_X1_HW0_LAST: u8 = 45;	/* X1 pipe last hword 0 */
+const R_TILEGX_IMM16_X0_HW1_LAST: u8 = 46;	/* X0 pipe last hword 1 */
+const R_TILEGX_IMM16_X1_HW1_LAST: u8 = 47;	/* X1 pipe last hword 1 */
+const R_TILEGX_IMM16_X0_HW2_LAST: u8 = 48;	/* X0 pipe last hword 2 */
+const R_TILEGX_IMM16_X1_HW2_LAST: u8 = 49;	/* X1 pipe last hword 2 */
+const R_TILEGX_IMM16_X0_HW0_PCREL: u8 = 50;	/* X0 pipe PC relative hword 0 */
+const R_TILEGX_IMM16_X1_HW0_PCREL: u8 = 51;	/* X1 pipe PC relative hword 0 */
+const R_TILEGX_IMM16_X0_HW1_PCREL: u8 = 52;	/* X0 pipe PC relative hword 1 */
+const R_TILEGX_IMM16_X1_HW1_PCREL: u8 = 53;	/* X1 pipe PC relative hword 1 */
+const R_TILEGX_IMM16_X0_HW2_PCREL: u8 = 54;	/* X0 pipe PC relative hword 2 */
+const R_TILEGX_IMM16_X1_HW2_PCREL: u8 = 55;	/* X1 pipe PC relative hword 2 */
+const R_TILEGX_IMM16_X0_HW3_PCREL: u8 = 56;	/* X0 pipe PC relative hword 3 */
+const R_TILEGX_IMM16_X1_HW3_PCREL: u8 = 57;	/* X1 pipe PC relative hword 3 */
+const R_TILEGX_IMM16_X0_HW0_LAST_PCREL: u8 = 58; /* X0 pipe PC-rel last hword 0 */
+const R_TILEGX_IMM16_X1_HW0_LAST_PCREL: u8 = 59; /* X1 pipe PC-rel last hword 0 */
+const R_TILEGX_IMM16_X0_HW1_LAST_PCREL: u8 = 60; /* X0 pipe PC-rel last hword 1 */
+const R_TILEGX_IMM16_X1_HW1_LAST_PCREL: u8 = 61; /* X1 pipe PC-rel last hword 1 */
+const R_TILEGX_IMM16_X0_HW2_LAST_PCREL: u8 = 62; /* X0 pipe PC-rel last hword 2 */
+const R_TILEGX_IMM16_X1_HW2_LAST_PCREL: u8 = 63; /* X1 pipe PC-rel last hword 2 */
+const R_TILEGX_IMM16_X0_HW0_GOT: u8 = 64;	/* X0 pipe hword 0 GOT offset */
+const R_TILEGX_IMM16_X1_HW0_GOT: u8 = 65;	/* X1 pipe hword 0 GOT offset */
+const R_TILEGX_IMM16_X0_HW0_PLT_PCREL: u8 = 66; /* X0 pipe PC-rel PLT hword 0 */
+const R_TILEGX_IMM16_X1_HW0_PLT_PCREL: u8 = 67; /* X1 pipe PC-rel PLT hword 0 */
+const R_TILEGX_IMM16_X0_HW1_PLT_PCREL: u8 = 68; /* X0 pipe PC-rel PLT hword 1 */
+const R_TILEGX_IMM16_X1_HW1_PLT_PCREL: u8 = 69; /* X1 pipe PC-rel PLT hword 1 */
+const R_TILEGX_IMM16_X0_HW2_PLT_PCREL: u8 = 70; /* X0 pipe PC-rel PLT hword 2 */
+const R_TILEGX_IMM16_X1_HW2_PLT_PCREL: u8 = 71; /* X1 pipe PC-rel PLT hword 2 */
+const R_TILEGX_IMM16_X0_HW0_LAST_GOT: u8 = 72; /* X0 pipe last hword 0 GOT offset */
+const R_TILEGX_IMM16_X1_HW0_LAST_GOT: u8 = 73; /* X1 pipe last hword 0 GOT offset */
+const R_TILEGX_IMM16_X0_HW1_LAST_GOT: u8 = 74; /* X0 pipe last hword 1 GOT offset */
+const R_TILEGX_IMM16_X1_HW1_LAST_GOT: u8 = 75; /* X1 pipe last hword 1 GOT offset */
+const R_TILEGX_IMM16_X0_HW3_PLT_PCREL: u8 = 76; /* X0 pipe PC-rel PLT hword 3 */
+const R_TILEGX_IMM16_X1_HW3_PLT_PCREL: u8 = 77; /* X1 pipe PC-rel PLT hword 3 */
+const R_TILEGX_IMM16_X0_HW0_TLS_GD: u8 = 78;	/* X0 pipe hword 0 TLS GD offset */
+const R_TILEGX_IMM16_X1_HW0_TLS_GD: u8 = 79;	/* X1 pipe hword 0 TLS GD offset */
+const R_TILEGX_IMM16_X0_HW0_TLS_LE: u8 = 80;	/* X0 pipe hword 0 TLS LE offset */
+const R_TILEGX_IMM16_X1_HW0_TLS_LE: u8 = 81;	/* X1 pipe hword 0 TLS LE offset */
+const R_TILEGX_IMM16_X0_HW0_LAST_TLS_LE: u8 = 82; /* X0 pipe last hword 0 LE off */
+const R_TILEGX_IMM16_X1_HW0_LAST_TLS_LE: u8 = 83; /* X1 pipe last hword 0 LE off */
+const R_TILEGX_IMM16_X0_HW1_LAST_TLS_LE: u8 = 84; /* X0 pipe last hword 1 LE off */
+const R_TILEGX_IMM16_X1_HW1_LAST_TLS_LE: u8 = 85; /* X1 pipe last hword 1 LE off */
+const R_TILEGX_IMM16_X0_HW0_LAST_TLS_GD: u8 = 86; /* X0 pipe last hword 0 GD off */
+const R_TILEGX_IMM16_X1_HW0_LAST_TLS_GD: u8 = 87; /* X1 pipe last hword 0 GD off */
+const R_TILEGX_IMM16_X0_HW1_LAST_TLS_GD: u8 = 88; /* X0 pipe last hword 1 GD off */
+const R_TILEGX_IMM16_X1_HW1_LAST_TLS_GD: u8 = 89; /* X1 pipe last hword 1 GD off */
+/* Relocs 90-91 are currently not defined.  */
+const R_TILEGX_IMM16_X0_HW0_TLS_IE: u8 = 92;	/* X0 pipe hword 0 TLS IE offset */
+const R_TILEGX_IMM16_X1_HW0_TLS_IE: u8 = 93;	/* X1 pipe hword 0 TLS IE offset */
+const R_TILEGX_IMM16_X0_HW0_LAST_PLT_PCREL: u8 = 94; /* X0 pipe PC-rel PLT last hword 0 */
+const R_TILEGX_IMM16_X1_HW0_LAST_PLT_PCREL: u8 = 95; /* X1 pipe PC-rel PLT last hword 0 */
+const R_TILEGX_IMM16_X0_HW1_LAST_PLT_PCREL: u8 = 96; /* X0 pipe PC-rel PLT last hword 1 */
+const R_TILEGX_IMM16_X1_HW1_LAST_PLT_PCREL: u8 = 97; /* X1 pipe PC-rel PLT last hword 1 */
+const R_TILEGX_IMM16_X0_HW2_LAST_PLT_PCREL: u8 = 98; /* X0 pipe PC-rel PLT last hword 2 */
+const R_TILEGX_IMM16_X1_HW2_LAST_PLT_PCREL: u8 = 99; /* X1 pipe PC-rel PLT last hword 2 */
+const R_TILEGX_IMM16_X0_HW0_LAST_TLS_IE: u8 = 100; /* X0 pipe last hword 0 IE off */
+const R_TILEGX_IMM16_X1_HW0_LAST_TLS_IE: u8 = 101; /* X1 pipe last hword 0 IE off */
+const R_TILEGX_IMM16_X0_HW1_LAST_TLS_IE: u8 = 102; /* X0 pipe last hword 1 IE off */
+const R_TILEGX_IMM16_X1_HW1_LAST_TLS_IE: u8 = 103; /* X1 pipe last hword 1 IE off */
+/* Relocs 104-105 are currently not defined.  */
+const R_TILEGX_TLS_DTPMOD64: u8 = 106;	/* 64-bit ID of symbol's module */
+const R_TILEGX_TLS_DTPOFF64: u8 = 107;	/* 64-bit offset in TLS block */
+const R_TILEGX_TLS_TPOFF64: u8 = 108;	/* 64-bit offset in static TLS block */
+const R_TILEGX_TLS_DTPMOD32: u8 = 109;	/* 32-bit ID of symbol's module */
+const R_TILEGX_TLS_DTPOFF32: u8 = 110;	/* 32-bit offset in TLS block */
+const R_TILEGX_TLS_TPOFF32: u8 = 111;	/* 32-bit offset in static TLS block */
+const R_TILEGX_TLS_GD_CALL: u8 = 112;	/* "jal" for TLS GD */
+const R_TILEGX_IMM8_X0_TLS_GD_ADD: u8 = 113;	/* X0 pipe "addi" for TLS GD */
+const R_TILEGX_IMM8_X1_TLS_GD_ADD: u8 = 114;	/* X1 pipe "addi" for TLS GD */
+const R_TILEGX_IMM8_Y0_TLS_GD_ADD: u8 = 115;	/* Y0 pipe "addi" for TLS GD */
+const R_TILEGX_IMM8_Y1_TLS_GD_ADD: u8 = 116;	/* Y1 pipe "addi" for TLS GD */
+const R_TILEGX_TLS_IE_LOAD: u8 = 117;	/* "ld_tls" for TLS IE */
+const R_TILEGX_IMM8_X0_TLS_ADD: u8 = 118;	/* X0 pipe "addi" for TLS GD/IE */
+const R_TILEGX_IMM8_X1_TLS_ADD: u8 = 119;	/* X1 pipe "addi" for TLS GD/IE */
+const R_TILEGX_IMM8_Y0_TLS_ADD: u8 = 120;	/* Y0 pipe "addi" for TLS GD/IE */
+const R_TILEGX_IMM8_Y1_TLS_ADD: u8 = 121;	/* Y1 pipe "addi" for TLS GD/IE */
+
+const R_TILEGX_GNU_VTINHERIT: u8 = 128;	/* GNU C++ vtable hierarchy */
+const R_TILEGX_GNU_VTENTRY: u8 = 129;	/* GNU C++ vtable member usage */
+
+const R_TILEGX_NUM: u8 = 130;
+
+/* RISC-V ELF Flags */
+const EF_RISCV_RVC: u8 = 0x1;
+const EF_RISCV_FLOAT_ABI: u8 = 0x6;
+const EF_RISCV_FLOAT_ABI_SOFT: u8 = 0x0;
+const EF_RISCV_FLOAT_ABI_SINGLE: u8 = 0x2;
+const EF_RISCV_FLOAT_ABI_DOUBLE: u8 = 0x4;
+const EF_RISCV_FLOAT_ABI_QUAD: u8 = 0x6;
+
+/* RISC-V relocations.  */
+const R_RISCV_NONE: u8 = 0;
+const R_RISCV_32: u8 = 1;
+const R_RISCV_64: u8 = 2;
+const R_RISCV_RELATIVE: u8 = 3;
+const R_RISCV_COPY: u8 = 4;
+const R_RISCV_JUMP_SLOT: u8 = 5;
+const R_RISCV_TLS_DTPMOD32: u8 = 6;
+const R_RISCV_TLS_DTPMOD64: u8 = 7;
+const R_RISCV_TLS_DTPREL32: u8 = 8;
+const R_RISCV_TLS_DTPREL64: u8 = 9;
+const R_RISCV_TLS_TPREL32: u8 = 10;
+const R_RISCV_TLS_TPREL64: u8 = 11;
+const R_RISCV_BRANCH: u8 = 16;
+const R_RISCV_JAL: u8 = 17;
+const R_RISCV_CALL: u8 = 18;
+const R_RISCV_CALL_PLT: u8 = 19;
+const R_RISCV_GOT_HI20: u8 = 20;
+const R_RISCV_TLS_GOT_HI20: u8 = 21;
+const R_RISCV_TLS_GD_HI20: u8 = 22;
+const R_RISCV_PCREL_HI20: u8 = 23;
+const R_RISCV_PCREL_LO12_I: u8 = 24;
+const R_RISCV_PCREL_LO12_S: u8 = 25;
+const R_RISCV_HI20: u8 = 26;
+const R_RISCV_LO12_I: u8 = 27;
+const R_RISCV_LO12_S: u8 = 28;
+const R_RISCV_TPREL_HI20: u8 = 29;
+const R_RISCV_TPREL_LO12_I: u8 = 30;
+const R_RISCV_TPREL_LO12_S: u8 = 31;
+const R_RISCV_TPREL_ADD: u8 = 32;
+const R_RISCV_ADD8: u8 = 33;
+const R_RISCV_ADD16: u8 = 34;
+const R_RISCV_ADD32: u8 = 35;
+const R_RISCV_ADD64: u8 = 36;
+const R_RISCV_SUB8: u8 = 37;
+const R_RISCV_SUB16: u8 = 38;
+const R_RISCV_SUB32: u8 = 39;
+const R_RISCV_SUB64: u8 = 40;
+const R_RISCV_GNU_VTINHERIT: u8 = 41;
+const R_RISCV_GNU_VTENTRY: u8 = 42;
+const R_RISCV_ALIGN: u8 = 43;
+const R_RISCV_RVC_BRANCH: u8 = 44;
+const R_RISCV_RVC_JUMP: u8 = 45;
+const R_RISCV_RVC_LUI: u8 = 46;
+const R_RISCV_GPREL_I: u8 = 47;
+const R_RISCV_GPREL_S: u8 = 48;
+const R_RISCV_TPREL_I: u8 = 49;
+const R_RISCV_TPREL_S: u8 = 50;
+const R_RISCV_RELAX: u8 = 51;
+const R_RISCV_SUB6: u8 = 52;
+const R_RISCV_SET6: u8 = 53;
+const R_RISCV_SET8: u8 = 54;
+const R_RISCV_SET16: u8 = 55;
+const R_RISCV_SET32: u8 = 56;
+const R_RISCV_32_PCREL: u8 = 57;
+const R_RISCV_IRELATIVE: u8 = 58;
+
+const R_RISCV_NUM: u8 = 59;
+
+/* BPF specific declarations.  */
+
+const R_BPF_NONE: u8 = 0;	/* No reloc */
+const R_BPF_64_64: u8 = 1;
+const R_BPF_64_32: u8 = 10;
+
+/* Imagination Meta specific relocations. */
+
+const R_METAG_HIADDR16: u8 = 0;
+const R_METAG_LOADDR16: u8 = 1;
+const R_METAG_ADDR32: u8 = 2;	/* 32bit absolute address */
+const R_METAG_NONE: u8 = 3;	/* No reloc */
+const R_METAG_RELBRANCH: u8 = 4;
+const R_METAG_GETSETOFF: u8 = 5;
+
+/* Backward compatibility */
+const R_METAG_REG32OP1: u8 = 6;
+const R_METAG_REG32OP2: u8 = 7;
+const R_METAG_REG32OP3: u8 = 8;
+const R_METAG_REG16OP1: u8 = 9;
+const R_METAG_REG16OP2: u8 = 10;
+const R_METAG_REG16OP3: u8 = 11;
+const R_METAG_REG32OP4: u8 = 12;
+
+const R_METAG_HIOG: u8 = 13;
+const R_METAG_LOOG: u8 = 14;
+
+const R_METAG_REL8: u8 = 15;
+const R_METAG_REL16: u8 = 16;
+
+/* GNU */
+const R_METAG_GNU_VTINHERIT: u8 = 30;
+const R_METAG_GNU_VTENTRY: u8 = 31;
+
+/* PIC relocations */
+const R_METAG_HI16_GOTOFF: u8 = 32;
+const R_METAG_LO16_GOTOFF: u8 = 33;
+const R_METAG_GETSET_GOTOFF: u8 = 34;
+const R_METAG_GETSET_GOT: u8 = 35;
+const R_METAG_HI16_GOTPC: u8 = 36;
+const R_METAG_LO16_GOTPC: u8 = 37;
+const R_METAG_HI16_PLT: u8 = 38;
+const R_METAG_LO16_PLT: u8 = 39;
+const R_METAG_RELBRANCH_PLT: u8 = 40;
+const R_METAG_GOTOFF: u8 = 41;
+const R_METAG_PLT: u8 = 42;
+const R_METAG_COPY: u8 = 43;
+const R_METAG_JMP_SLOT: u8 = 44;
+const R_METAG_RELATIVE: u8 = 45;
+const R_METAG_GLOB_DAT: u8 = 46;
+
+/* TLS relocations */
+const R_METAG_TLS_GD: u8 = 47;
+const R_METAG_TLS_LDM: u8 = 48;
+const R_METAG_TLS_LDO_HI16: u8 = 49;
+const R_METAG_TLS_LDO_LO16: u8 = 50;
+const R_METAG_TLS_LDO: u8 = 51;
+const R_METAG_TLS_IE: u8 = 52;
+const R_METAG_TLS_IENONPIC: u8 = 53;
+const R_METAG_TLS_IENONPIC_HI16: u8 = 54;
+const R_METAG_TLS_IENONPIC_LO16: u8 = 55;
+const R_METAG_TLS_TPOFF: u8 = 56;
+const R_METAG_TLS_DTPMOD: u8 = 57;
+const R_METAG_TLS_DTPOFF: u8 = 58;
+const R_METAG_TLS_LE: u8 = 59;
+const R_METAG_TLS_LE_HI16: u8 = 60;
+const R_METAG_TLS_LE_LO16: u8 = 61;
+
+/* NDS32 relocations.  */
+const R_NDS32_NONE: u8 = 0;
+const R_NDS32_32_RELA: u8 = 20;
+const R_NDS32_COPY: u8 = 39;
+const R_NDS32_GLOB_DAT: u8 = 40;
+const R_NDS32_JMP_SLOT: u8 = 41;
+const R_NDS32_RELATIVE: u8 = 42;
+const R_NDS32_TLS_TPOFF: u8 = 102;
+const R_NDS32_TLS_DESC: u8 = 119;
+
+/* ARCompact/ARCv2 specific relocs.  */
+const R_ARC_NONE: u8 = 0x0;
+const R_ARC_8: u8 = 0x1;
+const R_ARC_16: u8 = 0x2;
+const R_ARC_24: u8 = 0x3;
+const R_ARC_32: u8 = 0x4;
+const R_ARC_B26: u8 = 0x5;
+const R_ARC_B22_PCREL: u8 = 0x6;
+const R_ARC_H30: u8 = 0x7;
+const R_ARC_N8: u8 = 0x8;
+const R_ARC_N16: u8 = 0x9;
+const R_ARC_N24: u8 = 0xA;
+const R_ARC_N32: u8 = 0xB;
+const R_ARC_SDA: u8 = 0xC;
+const R_ARC_SECTOFF: u8 = 0xD;
+const R_ARC_S21H_PCREL: u8 = 0xE;
+const R_ARC_S21W_PCREL: u8 = 0xF;
+const R_ARC_S25H_PCREL: u8 = 0x0;
+const R_ARC_S25W_PCREL: u8 = 0x1;
+const R_ARC_SDA32: u8 = 0x2;
+const R_ARC_SDA_LDST: u8 = 0x3;
+const R_ARC_SDA_LDST1: u8 = 0x4;
+const R_ARC_SDA_LDST2: u8 = 0x5;
+const R_ARC_SDA16_LD: u8 = 0x6;
+const R_ARC_SDA16_LD1: u8 = 0x7;
+const R_ARC_SDA16_LD2: u8 = 0x8;
+const R_ARC_S13_PCREL: u8 = 0x9;
+const R_ARC_W: u8 = 0xA;
+const R_ARC_32_ME: u8 = 0xB;
+const R_ARC_N32_ME: u8 = 0xC;
+const R_ARC_SECTOFF_ME: u8 = 0xD;
+const R_ARC_SDA32_ME: u8 = 0xE;
+const R_ARC_W_ME: u8 = 0xF;
+const R_ARC_H30_ME: u8 = 0x0;
+const R_ARC_SECTOFF_U8: u8 = 0x1;
+const R_ARC_SECTOFF_S9: u8 = 0x2;
+const R_AC_SECTOFF_U8: u8 = 0x3;
+const R_AC_SECTOFF_U8_1: u8 = 0x4;
+const R_AC_SECTOFF_U8_2: u8 = 0x5;
+const R_AC_SECTOFF_S9: u8 = 0x6;
+const R_AC_SECTOFF_S9_1: u8 = 0x7;
+const R_AC_SECTOFF_S9_2: u8 = 0x8;
+const R_ARC_SECTOFF_ME_1: u8 = 0x9;
+const R_ARC_SECTOFF_ME_2: u8 = 0xA;
+const R_ARC_SECTOFF_1: u8 = 0xB;
+const R_ARC_SECTOFF_2: u8 = 0xC;
+const R_ARC_PC32: u8 = 0x2;
+const R_ARC_GOTPC32: u8 = 0x3;
+const R_ARC_PLT32: u8 = 0x4;
+const R_ARC_COPY: u8 = 0x5;
+const R_ARC_GLOB_DAT: u8 = 0x6;
+const R_ARC_JUMP_SLOT: u8 = 0x7;
+const R_ARC_RELATIVE: u8 = 0x8;
+const R_ARC_GOTOFF: u8 = 0x9;
+const R_ARC_GOTPC: u8 = 0xA;
+const R_ARC_GOT32: u8 = 0xB;
+
+const R_ARC_TLS_DTPMOD: u8 = 0x2;
+const R_ARC_TLS_DTPOFF: u8 = 0x3;
+const R_ARC_TLS_TPOFF: u8 = 0x4;
+const R_ARC_TLS_GD_GOT: u8 = 0x5;
+const R_ARC_TLS_GD_LD: u8 = 0x6;
+const R_ARC_TLS_GD_CALL: u8 = 0x7;
+const R_ARC_TLS_IE_GOT: u8 = 0x8;
+const R_ARC_TLS_DTPOFF_S9: u8 = 0xa;
+const R_ARC_TLS_LE_S9: u8 = 0xa;
+const R_ARC_TLS_LE_32: u8 = 0xb;
+
+/* OpenRISC 1000 specific relocs.  */
+const R_OR1K_NONE: u8 = 0;
+const R_OR1K_32: u8 = 1;
+const R_OR1K_16: u8 = 2;
+const R_OR1K_8: u8 = 3;
+const R_OR1K_LO_16_IN_INSN: u8 = 4;
+const R_OR1K_HI_16_IN_INSN: u8 = 5;
+const R_OR1K_INSN_REL_26: u8 = 6;
+const R_OR1K_GNU_VTENTRY: u8 = 7;
+const R_OR1K_GNU_VTINHERIT: u8 = 8;
+const R_OR1K_32_PCREL: u8 = 9;
+const R_OR1K_16_PCREL: u8 = 10;
+const R_OR1K_8_PCREL: u8 = 11;
+const R_OR1K_GOTPC_HI16: u8 = 12;
+const R_OR1K_GOTPC_LO16: u8 = 13;
+const R_OR1K_GOT16: u8 = 14;
+const R_OR1K_PLT26: u8 = 15;
+const R_OR1K_GOTOFF_HI16: u8 = 16;
+const R_OR1K_GOTOFF_LO16: u8 = 17;
+const R_OR1K_COPY: u8 = 18;
+const R_OR1K_GLOB_DAT: u8 = 19;
+const R_OR1K_JMP_SLOT: u8 = 20;
+const R_OR1K_RELATIVE: u8 = 21;
+const R_OR1K_TLS_GD_HI16: u8 = 22;
+const R_OR1K_TLS_GD_LO16: u8 = 23;
+const R_OR1K_TLS_LDM_HI16: u8 = 24;
+const R_OR1K_TLS_LDM_LO16: u8 = 25;
+const R_OR1K_TLS_LDO_HI16: u8 = 26;
+const R_OR1K_TLS_LDO_LO16: u8 = 27;
+const R_OR1K_TLS_IE_HI16: u8 = 28;
+const R_OR1K_TLS_IE_LO16: u8 = 29;
+const R_OR1K_TLS_LE_HI16: u8 = 30;
+const R_OR1K_TLS_LE_LO16: u8 = 31;
+const R_OR1K_TLS_TPOFF: u8 = 32;
+const R_OR1K_TLS_DTPOFF: u8 = 33;
+const R_OR1K_TLS_DTPMOD: u8 = 34;
+
